@@ -12,7 +12,9 @@ const url = require('url');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
-const DATA_FILE = path.join(ROOT, 'data.json');
+// 数据目录：优先使用 DATA_DIR 环境变量（用于挂载持久磁盘，如 Render 的 /var/data），默认使用当前目录
+const DATA_DIR = process.env.DATA_DIR || ROOT;
+const DATA_FILE = path.join(DATA_DIR, 'data.json');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 
 const MAX_ADMINS = 100;
@@ -106,16 +108,30 @@ const MIME = {
 };
 
 function serveStatic(pathname, res) {
-  let rel = decodeURIComponent(pathname.split('?')[0]);
+  let rel = decodeURIComponent(pathname.split('?')[0].split('#')[0]);
   if (rel === '/' || rel === '') rel = '/index.html';
-  const filePath = path.join(PUBLIC_DIR, path.normalize(rel).replace(/^(\.\.[\/\\])+/, ''));
-  if (!filePath.startsWith(PUBLIC_DIR)) { res.writeHead(403); res.end('Forbidden'); return; }
-  fs.readFile(filePath, (err, data) => {
-    if (err) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('404 Not Found'); return; }
-    const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
-    res.end(data);
-  });
+  const norm = path.normalize(rel);
+  const segs = norm.split(path.sep).filter(function (x) { return x && x !== '..'; });
+  const safe = segs.join(path.sep);
+  const candidates = [
+    path.join(PUBLIC_DIR, safe),
+    path.join(ROOT, safe),
+    path.join(PUBLIC_DIR, safe + '.html')
+  ];
+  tryNext(0);
+  function tryNext(i) {
+    if (i >= candidates.length) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('404 Not Found');
+      return;
+    }
+    fs.readFile(candidates[i], (err, data) => {
+      if (err) { tryNext(i + 1); return; }
+      const ext = path.extname(candidates[i]).toLowerCase();
+      res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+      res.end(data);
+    });
+  }
 }
 
 /* ------------------------------------------------------------------ */

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: recruit-cloud-system
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server.js
+    envVars:
+      - key: TERMINAL_USER
+        value: admin
+      - key: TERMINAL_PASS
+        value: admin123
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: recruit-data
+      mountPath: /var/data
+      sizeGB: 1

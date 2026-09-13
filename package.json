@@ -1,0 +1,13 @@
+{
+  "name": "recruit-cloud-system",
+  "version": "1.0.0",
+  "description": "车辆与交通学院·团总支学生会 招新系统（云端同步版）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT"
+}

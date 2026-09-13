@@ -107,15 +107,6 @@ table tr:hover{background:var(--intensity-3)}
 .alert-success{background:color-mix(in srgb,var(--success) 12%,transparent);border:1px solid color-mix(in srgb,var(--success) 25%,transparent);color:var(--success)}
 .hidden{display:none!important}
 .footer{background:var(--panel-bg);border-top:.5px solid var(--intensity-8);padding:20px 24px;text-align:center;font-size:12px;color:var(--text-secondary);margin-top:20px}
-.checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.checkbox-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border:.5px solid var(--intensity-8);border-radius:var(--radius-md);cursor:pointer;transition:all .15s;user-select:none}
-.checkbox-item:hover{background:var(--intensity-3)}
-.checkbox-item.selected{background:color-mix(in srgb,var(--primary) 10%,transparent);border-color:var(--primary)}
-.checkbox-item .cb-box{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--intensity-20);display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .15s;flex-shrink:0}
-.checkbox-item.selected .cb-box{background:var(--primary);border-color:var(--primary);color:#fff}
-.checkbox-item .cb-label{font-size:13px;font-weight:500}
-.checkbox-item .cb-order{min-width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;flex-shrink:0}
-.checkbox-item.selected .cb-order{display:flex}
 .upload-zone{position:relative;border:1.5px dashed var(--intensity-20);border-radius:var(--radius-md);padding:20px;text-align:center;transition:all .2s;background:var(--intensity-3);cursor:pointer}
 .upload-zone:hover{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 5%,transparent)}
 .upload-zone.has-file{border-style:solid;border-color:var(--success);background:color-mix(in srgb,var(--success) 6%,transparent)}
@@ -143,9 +134,9 @@ table tr:hover{background:var(--intensity-3)}
 .main-content{padding:12px}
 .hero-section{padding:28px 20px}
 .hero-section h1{font-size:24px}
-.form-row,.checkbox-grid{grid-template-columns:1fr}
+.form-row{grid-template-columns:1fr}
 }
-</style>
+.dept-select{position:relative}.dept-toggle{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:13px 16px;border:1.5px solid #2F6BE4;border-radius:11px;background:#fff;color:#8A94A6;font-size:15px;cursor:pointer;font-family:inherit;outline:none;transition:border-color .15s,color .15s}.dept-toggle.has-sel{color:#2F6BE4;font-weight:500}.dept-toggle .dept-chev{color:#2F6BE4;font-size:16px;line-height:1;transition:transform .2s}.dept-toggle.open .dept-chev{transform:rotate(180deg)}.dept-panel{display:none;margin-top:8px;border:1px solid #EEF0F4;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 6px 20px rgba(31,41,55,.07)}.dept-panel.open{display:block}.dept-opt{display:flex;align-items:center;gap:14px;padding:15px 16px;cursor:pointer;user-select:none;background:#fff}.dept-opt+.dept-opt{border-top:1px solid #F0F2F5}.dept-opt:hover{background:#F7F9FC}.dept-cb{width:24px;height:24px;box-sizing:border-box;border-radius:7px;border:2px solid #CBD2DC;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:transparent;font-size:14px;font-weight:800;transition:all .15s}.dept-opt.sel .dept-cb{background:#2F6BE4;border-color:#2F6BE4;color:#fff}.dept-name{flex:1;font-size:15px;color:#1F2937}.dept-num{min-width:28px;height:28px;box-sizing:border-box;padding:0 7px;border-radius:8px;background:#2F6BE4;color:#fff;font-size:14px;font-weight:800;display:none;align-items:center;justify-content:center;flex-shrink:0}.dept-opt.sel .dept-num{display:flex}.dept-hint{padding:12px 16px;font-size:13px;color:#9AA3AF;text-align:center;background:#F7F9FC;border-top:1px solid #F0F2F5}</style>
 </head>
 <body>
 <div class="page-wrap" id="app">
@@ -396,7 +387,7 @@ if(!zone)return;
 if(fd){zone.classList.add('has-file');const ext=fd.name.split('.').pop().toLowerCase();const isImg=['png','jpg','jpeg','gif','webp','bmp'].includes(ext);display.innerHTML=`<div class="file-preview-card"><div class="fp-icon">${isImg?'🖼️':'📄'}</div><div class="fp-info"><div class="fp-name">${fd.name}</div><div class="fp-size">${(fd.size/1024).toFixed(1)} KB</div></div></div>`;}
 else{zone.classList.remove('has-file');display.innerHTML=`<div class="uz-icon">📎</div><div class="uz-title">点击上传附件</div><div class="uz-hint">支持图片、PDF、Word等格式，不超过5MB</div>`;}
 }
-registerDeptCheckboxes();
+registerDeptPicker();
 document.getElementById('submitResume').addEventListener('click',async function(){
 const name=document.getElementById('resName').value.trim(),cls=document.getElementById('resClass').value.trim(),phone=document.getElementById('resPhone').value.trim(),email=document.getElementById('resEmail').value.trim(),intro=document.getElementById('resIntro').value.trim(),skills=document.getElementById('resSkills').value.trim(),awards=document.getElementById('resAwards').value.trim(),prevPos=document.getElementById('resPrevPos').value.trim(),al=document.getElementById('resumeAlert'),btn=this;
 if(!name||!cls||!phone){al.className='alert';al.textContent='请填写必填字段';return}
@@ -424,10 +415,7 @@ return `<div class="card"><h3 style="font-size:18px;font-weight:600;margin-botto
 <div class="form-group"><label>姓名</label><input id="resName" value="${u.name||''}" placeholder="请输入姓名"></div>
 <div class="form-row"><div class="form-group"><label>学号</label><input id="resStudentId" value="${u.studentId||''}" readonly style="background:var(--intensity-6)"></div><div class="form-group"><label>班级</label><input id="resClass" value="${u.class||''}" placeholder="如：车辆工程2301"></div></div>
 <div class="form-row"><div class="form-group"><label>手机号</label><input id="resPhone" value="${u.phone||''}" placeholder="请输入手机号"></div><div class="form-group"><label>邮箱</label><input id="resEmail" value="${u.email||''}" placeholder="请输入邮箱"></div></div>
-<div class="form-group"><label>意向部门（可多选，最多3个，选择顺序即优先级 1→3）</label>
-<div class="checkbox-grid">${DEPT_DATA.map(d=>`<label class="checkbox-item"><div class="cb-box">✓</div><div style="flex:1"><div class="cb-label">${d.icon} ${d.name}</div><div class="cb-order"></div><input type="checkbox" class="dept-check hidden" value="${d.name}"></label>`).join('')}</div>
-<div style="font-size:12px;color:var(--text-tertiary);margin-top:8px;" id="deptCountHint">已选择 0 / 3 个部门</div></div>
-<div class="form-group"><label>个人简介</label><textarea id="resIntro" placeholder="请简要介绍自己，包括兴趣爱好、相关经历、加入理由等..." style="height:100px"></textarea></div>
+<div class="form-group"><label>请选择加入部门：</label><div class="dept-select"><button type="button" class="dept-toggle" id="deptToggle"><span id="deptToggleLabel">请选择加入部门</span><span class="dept-chev">⌄</span></button><div class="dept-panel" id="deptPanel">${DEPT_DATA.map(d=>`<span class="dept-opt" data-name="${d.name}"><span class="dept-cb">✓</span><span class="dept-name">${d.name}</span><span class="dept-num"></span></span>`).join('')}<div class="dept-hint" id="deptHint">最多选择3个部门，数字代表志愿顺序</div></div></div></div><div class="form-group"><label>个人简介</label><textarea id="resIntro" placeholder="请简要介绍自己，包括兴趣爱好、相关经历、加入理由等..." style="height:100px"></textarea></div>
 <div class="form-group"><label>特长与技能</label><textarea id="resSkills" placeholder="如：摄影、视频剪辑、文案写作、PS设计、公众号运营、活动策划等" style="height:70px"></textarea></div>
 <div class="form-row"><div class="form-group"><label>获奖情况</label><textarea id="resAwards" placeholder="如：校级奖学金、竞赛获奖、荣誉称号等" style="height:70px"></textarea></div><div class="form-group"><label>曾任职务</label><textarea id="resPrevPos" placeholder="如：班长、团支书、社团负责人等" style="height:70px"></textarea></div></div>
 <div class="form-group"><label>上传附件（简历/作品集）</label>
@@ -483,7 +471,7 @@ ${resume.status==='admitted'?`<div class="congrats-box" style="margin-top:12px;$
 ${resume.status==='pending'?`<div style="margin-top:12px;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);text-align:center;">⏳ 你的简历正在审核中，请耐心等待～</div>`:''}
 ${resume.status==='rejected'?`<div style="margin-top:12px;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);text-align:center;">本次招新未被录取，你可以<button class="btn btn-primary btn-sm" id="reapplyBtn2" style="margin-left:8px;">重新投递</button></div>`:''}
 </div>`:`<div class="card" style="text-align:center;padding:32px;"><p style="font-size:15px;color:var(--text-secondary);margin-bottom:16px;">你还没有投递简历哦～</p><button class="btn btn-primary" onclick="window._navigate('resume')">📝 立即投递简历</button></div>`}
-<div class="card-sm" style="margin-top:12px;"><h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">👤 个人信息</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;color:var(--text-secondary);"><p><strong>学号：</strong>${u.studentId||'-'}</p><p><strong>姓名：</strong>${u.name||'-'}</p><p><strong>班级：</strong>${u.class||'-'}</p><p><strong>手机：</strong>${u.phone||'-'}</p><p><strong>邮箱：</strong>${u.email||'-'}</p></div></div></div>`;
+<div class="card-sm" style="margin-top:12px;"><h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">👤 个人信息</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;color:var(--text-secondary);"><p><strong>学号：</strong>${u.studentId||'-'}</p><p><strong>姓名：</strong>${u.name||'-'}</p><p><strong>班级：</strong>${u.class||'-'}</p><p><strong>手机：</strong>${u.phone||'-'}</p><p><strong>邮箱：</strong>${u.email||'-'}</p></div><button class="btn btn-danger btn-sm" id="deleteAccountBtn" style="margin-top:14px;width:100%;">🗑️ 注销账户（永久删除我的账号与全部数据）</button><div style="font-size:12px;color:var(--text-tertiary);margin-top:6px;text-align:center;">注销后该账号及简历、投递记录将被彻底清除，需重新注册才能登录，此操作不可恢复。</div></div></div>`;
 if(resume&&resume.status==='rejected'){
 const btn=document.getElementById('reapplyBtn2');
 if(btn)btn.addEventListener('click',async function(){
@@ -492,6 +480,14 @@ try{await api.del('/api/resumes/'+resume.id);navigate('resume');}
 catch(e){alert(e.message);btn.disabled=false;}
 });
 }
+const delAcc=document.getElementById('deleteAccountBtn');
+if(delAcc)delAcc.addEventListener('click',async function(){
+if(!confirm('⚠️ 确定要注销账户吗？\n\n你的账号、简历及全部投递记录将被永久删除，且无法恢复。注销后需重新注册才能登录。'))return;
+if(!confirm('再次确认：这是不可恢复的操作，真的要永久删除吗？'))return;
+delAcc.disabled=true;
+try{await api.del('/api/account');api.setToken('');SESSION={user:null,isAdmin:false,isTerminal:false};alert('✅ 账户已注销');navigate('home');}
+catch(e){alert(e.message);delAcc.disabled=false;}
+});
 }
 
 /* ---------------- 管理后台 ---------------- */
@@ -623,7 +619,7 @@ document.getElementById('modalDownloadBtn2').addEventListener('click',()=>downlo
 }
 function downloadFile(file){const a=document.createElement('a');a.href=file.data;a.download=file.name;document.body.appendChild(a);a.click();a.remove();}
 
-function registerDeptCheckboxes(){const items=document.querySelectorAll('.checkbox-item');const hint=document.getElementById('deptCountHint');if(!items.length)return;let order=[];function refresh(){const cnt=order.length;items.forEach(item=>{const cb=item.querySelector('.dept-check');const badge=item.querySelector('.cb-order');const pos=order.indexOf(cb.value);const sel=pos>=0;cb.checked=sel;item.classList.toggle('selected',sel);if(badge)badge.textContent=sel?String(pos+1):'';});if(hint)hint.textContent=cnt?('已选择 '+cnt+' / 3 个部门 · 数字 1→'+cnt+' 表示优先级'):'已选择 0 / 3 个部门';}items.forEach(item=>{const cb=item.querySelector('.dept-check');item.addEventListener('click',function(e){e.preventDefault();const val=cb.value;const pos=order.indexOf(val);if(pos>=0){order.splice(pos,1);}else{if(order.length>=3){alert('最多只能选择3个部门');return;}order.push(val);}refresh();});});window._getDeptOrder=function(){return order.slice();};}
+function registerDeptPicker(){var toggle=document.getElementById('deptToggle');var panel=document.getElementById('deptPanel');var label=document.getElementById('deptToggleLabel');if(!toggle||!panel)return;var order=[];var rows=Array.prototype.slice.call(panel.querySelectorAll('.dept-opt'));function refresh(){rows.forEach(function(row){var name=row.getAttribute('data-name');var pos=order.indexOf(name);var num=row.querySelector('.dept-num');if(pos>=0){row.classList.add('sel');if(num)num.textContent=String(pos+1);}else{row.classList.remove('sel');if(num)num.textContent='';}});if(label)label.textContent=order.length?('已选择 '+order.length+' 个部门'):'请选择加入部门';if(order.length){toggle.classList.add('has-sel');}else{toggle.classList.remove('has-sel');}}rows.forEach(function(row){row.addEventListener('click',function(){var name=this.getAttribute('data-name');var pos=order.indexOf(name);if(pos>=0){order.splice(pos,1);}else{if(order.length>=3){alert('最多只能选择3个部门');return;}order.push(name);}refresh();});});toggle.addEventListener('click',function(){panel.classList.toggle('open');toggle.classList.toggle('open');});refresh();window._getDeptOrder=function(){return order.slice();};}
 
 /* ---------------- 初始化 ---------------- */
 window._navigate=navigate;

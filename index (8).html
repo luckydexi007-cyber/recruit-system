@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>车辆与交通学院·团总支学生会 | 招新系统</title>
+<style>
+:root{
+--primary:#C41E3A;--accent:#A0182E;--background:#F0F2F5;--panel-bg:#FAFBFC;--card-bg:#fff;
+--tooltip-bg:#454545;--success:#40B43E;--warning:#EBA400;--destructive:#E65C53;
+--destructive-hover:#D14B42;--primary-foreground:#fff;--text-primary:rgba(0,0,0,.85);
+--text-secondary:rgba(0,0,0,.5);--text-tertiary:rgba(0,0,0,.35);--intensity-0:rgba(0,0,0,0);
+--intensity-3:rgba(0,0,0,.03);--intensity-4:rgba(0,0,0,.04);--intensity-6:rgba(0,0,0,.06);
+--intensity-8:rgba(0,0,0,.08);--intensity-12:rgba(0,0,0,.12);--intensity-16:rgba(0,0,0,.16);
+--intensity-20:rgba(0,0,0,.2);--intensity-35:rgba(0,0,0,.35);--intensity-60:rgba(0,0,0,.6);
+--input-shadow:rgba(0,0,0,.08);--radius-sm:8px;--radius-md:10px;--radius-lg:14px;--radius-xl:18px;
+font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+@media (prefers-color-scheme:dark){
+:root{
+--background:#1A1A1D;--panel-bg:#252528;--card-bg:#2C2C30;--tooltip-bg:#BABABA;
+--primary-foreground:#fff;--text-primary:rgba(255,255,255,.85);--text-secondary:rgba(255,255,255,.5);
+--text-tertiary:rgba(255,255,255,.35);--intensity-0:rgba(255,255,255,0);
+--intensity-3:rgba(255,255,255,.03);--intensity-4:rgba(255,255,255,.04);
+--intensity-6:rgba(255,255,255,.06);--intensity-8:rgba(255,255,255,.08);
+--intensity-12:rgba(255,255,255,.12);--intensity-16:rgba(255,255,255,.16);
+--intensity-20:rgba(255,255,255,.2);--intensity-35:rgba(255,255,255,.35);
+--intensity-60:rgba(255,255,255,.6);--input-shadow:rgba(0,0,0,.28)
+}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+button,a,[role=button]{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.55}
+body{background:var(--background);color:var(--text-primary);min-height:100vh}
+.page-wrap{max-width:1200px;margin:0 auto;padding:0}
+.top-bar{background:linear-gradient(135deg,#C41E3A,#8B0000);color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.top-bar .logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:600;letter-spacing:1px}
+.top-bar .logo .icon{width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.top-bar .nav{display:flex;gap:4px}
+.top-bar .nav button{background:transparent;border:0;color:rgba(255,255,255,.8);padding:8px 12px;border-radius:8px;font-size:13px;transition:all .15s;white-space:nowrap}
+.top-bar .nav button:hover{background:rgba(255,255,255,.15);color:#fff}
+.top-bar .nav button.active{background:rgba(255,255,255,.2);color:#fff;font-weight:500}
+.top-bar .user-info{display:flex;align-items:center;gap:12px;font-size:13px}
+.top-bar .user-info .logout-btn{background:rgba(255,255,255,.15);border:0;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px}
+.top-bar .user-info .logout-btn:hover{background:rgba(255,255,255,.25)}
+.main-content{padding:24px}
+.section-title{font-size:22px;font-weight:600;margin-bottom:20px;border-left:4px solid var(--primary);padding-left:12px;color:var(--text-primary)}
+.card{background:var(--card-bg);border:.5px solid var(--intensity-8);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px}
+.card-sm{background:var(--card-bg);border:.5px solid var(--intensity-8);border-radius:var(--radius-md);padding:16px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;height:40px;border:.5px solid var(--intensity-12);border-radius:var(--radius-md);background:var(--intensity-4);color:var(--text-primary);padding:0 12px;font-size:13px;outline:none;transition:border .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 20%,transparent)}
+.form-group textarea{height:80px;padding:10px 12px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{height:40px;padding:0 20px;border:0;border-radius:var(--radius-md);font-size:13px;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-primary{background:var(--primary);color:var(--primary-foreground)}
+.btn-primary:hover{background:var(--accent)}
+.btn-secondary{background:var(--intensity-6);color:var(--text-primary);border:.5px solid var(--intensity-8)}
+.btn-secondary:hover{background:var(--intensity-12)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{opacity:.9}
+.btn-danger{background:var(--destructive);color:#fff}
+.btn-danger:hover{background:var(--destructive-hover)}
+.btn-sm{height:32px;padding:0 14px;font-size:12px}
+.btn-block{width:100%}
+.hero-section{background:linear-gradient(135deg,#C41E3A,#8B0000,#5C0000);border-radius:var(--radius-xl);padding:48px 40px;color:#fff;margin-bottom:24px;position:relative;overflow:hidden}
+.hero-section::before{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:rgba(255,255,255,.05);border-radius:50%}
+.hero-section::after{content:'';position:absolute;bottom:-30%;left:-10%;width:300px;height:300px;background:rgba(255,255,255,.05);border-radius:50%}
+.hero-section h1{font-size:32px;font-weight:700;margin-bottom:12px;position:relative}
+.hero-section p{font-size:15px;opacity:.9;line-height:1.7;max-width:700px;position:relative}
+.hero-section .hero-tag{display:inline-block;background:rgba(255,255,255,.2);padding:4px 14px;border-radius:20px;font-size:12px;margin-bottom:16px;position:relative}
+.dept-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.dept-tabs button{padding:8px 16px;border:.5px solid var(--intensity-12);border-radius:999px;background:transparent;font-size:13px;color:var(--text-secondary);transition:all .15s}
+.dept-tabs button:hover{background:var(--intensity-4);color:var(--text-primary)}
+.dept-tabs button.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:500}
+.tab-bar{display:flex;gap:8px;margin-bottom:20px;border-bottom:.5px solid var(--intensity-8);padding-bottom:12px;overflow-x:auto}
+.tab-bar button{background:transparent;border:0;padding:8px 16px;border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);transition:all .15s;white-space:nowrap}
+.tab-bar button:hover{background:var(--intensity-4);color:var(--text-primary)}
+.tab-bar button.active{background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);font-weight:500}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+table th{text-align:left;padding:10px 12px;color:var(--text-secondary);font-weight:500;font-size:12px;border-bottom:1px solid var(--intensity-8)}
+table td{padding:10px 12px;border-bottom:.5px solid var(--intensity-6)}
+table tr:hover{background:var(--intensity-3)}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:500;background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);border:.5px solid color-mix(in srgb,var(--primary) 20%,transparent)}
+.chip-admitted{background:color-mix(in srgb,var(--success) 18%,transparent);color:var(--success);border:.5px solid color-mix(in srgb,var(--success) 30%,transparent)}
+.chip-reallocate{background:color-mix(in srgb,#58B2DC 18%,transparent);color:#58B2DC;border:.5px solid color-mix(in srgb,#58B2DC 30%,transparent)}
+.status-pending{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:500;background:color-mix(in srgb,var(--warning) 18%,transparent);color:var(--warning);border:.5px solid color-mix(in srgb,var(--warning) 30%,transparent)}
+.status-admitted{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:500;background:color-mix(in srgb,var(--success) 18%,transparent);color:var(--success);border:.5px solid color-mix(in srgb,var(--success) 30%,transparent)}
+.status-rejected{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:500;background:color-mix(in srgb,var(--destructive) 18%,transparent);color:var(--destructive);border:.5px solid color-mix(in srgb,var(--destructive) 30%,transparent)}
+.status-reallocate{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:500;background:color-mix(in srgb,#58B2DC 18%,transparent);color:#58B2DC;border:.5px solid color-mix(in srgb,#58B2DC 30%,transparent)}
+.success-anim{text-align:center;padding:40px 20px}
+.success-anim .check{width:72px;height:72px;border-radius:50%;background:color-mix(in srgb,var(--success) 18%,transparent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px;color:var(--success)}
+.success-anim h3{font-size:20px;font-weight:600;margin-bottom:8px}
+.success-anim p{font-size:14px;color:var(--text-secondary)}
+.congrats-box{background:linear-gradient(135deg,color-mix(in srgb,var(--success) 10%,transparent),color-mix(in srgb,var(--success) 5%,transparent));border:1px solid color-mix(in srgb,var(--success) 30%,transparent);border-radius:var(--radius-lg);padding:24px;text-align:center;margin-top:16px}
+.congrats-box .big-icon{font-size:48px;margin-bottom:8px}
+.congrats-box h3{font-size:22px;color:var(--success);font-weight:600}
+.login-toggle{text-align:center;margin-bottom:16px;display:flex;gap:0;border:.5px solid var(--intensity-12);border-radius:var(--radius-md);overflow:hidden}
+.login-toggle button{flex:1;padding:10px;border:0;background:transparent;font-size:13px;color:var(--text-secondary);transition:all .15s}
+.login-toggle button.active{background:var(--primary);color:#fff;font-weight:500}
+.auth-switch{text-align:center;margin-top:16px;font-size:13px;color:var(--text-secondary)}
+.auth-switch a{color:var(--primary);cursor:pointer;font-weight:500}
+.alert{background:color-mix(in srgb,var(--destructive) 12%,transparent);border:1px solid color-mix(in srgb,var(--destructive) 25%,transparent);color:var(--destructive);padding:10px 14px;border-radius:var(--radius-md);font-size:13px;margin-bottom:12px}
+.alert-success{background:color-mix(in srgb,var(--success) 12%,transparent);border:1px solid color-mix(in srgb,var(--success) 25%,transparent);color:var(--success)}
+.hidden{display:none!important}
+.footer{background:var(--panel-bg);border-top:.5px solid var(--intensity-8);padding:20px 24px;text-align:center;font-size:12px;color:var(--text-secondary);margin-top:20px}
+.upload-zone{position:relative;border:1.5px dashed var(--intensity-20);border-radius:var(--radius-md);padding:20px;text-align:center;transition:all .2s;background:var(--intensity-3);cursor:pointer}
+.upload-zone:hover{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 5%,transparent)}
+.upload-zone.has-file{border-style:solid;border-color:var(--success);background:color-mix(in srgb,var(--success) 6%,transparent)}
+.upload-zone .uz-icon{font-size:32px;margin-bottom:8px}
+.upload-zone .uz-title{font-size:14px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+.upload-zone .uz-hint{font-size:12px;color:var(--text-tertiary)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-preview-card{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card-bg);border:.5px solid var(--intensity-8);border-radius:var(--radius-md);margin-top:8px}
+.file-preview-card .fp-icon{font-size:28px}
+.file-preview-card .fp-info{text-align:left}
+.file-preview-card .fp-name{font-size:13px;font-weight:500;color:var(--text-primary);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-preview-card .fp-size{font-size:11px;color:var(--text-tertiary)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.modal-card{background:var(--card-bg);border-radius:var(--radius-xl);padding:24px;max-width:600px;width:100%;max-height:80vh;overflow:auto;box-shadow:0 10px 40px var(--input-shadow)}
+.modal-card .modal-close{float:right;background:var(--intensity-6);border:0;width:32px;height:32px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
+.modal-card .modal-close:hover{background:var(--intensity-12)}
+.modal-card .modal-title{font-size:17px;font-weight:600;margin-bottom:16px}
+.sel-reallocate{height:28px;border:.5px solid #58B2DC;border-radius:6px;background:var(--intensity-4);color:#58B2DC;padding:0 6px;font-size:11px;outline:none;width:100%;font-weight:500}
+.cloud-badge{display:inline-flex;align-items:center;gap:4px;background:color-mix(in srgb,var(--success) 12%,transparent);color:var(--success);border:.5px solid color-mix(in srgb,var(--success) 25%,transparent);border-radius:999px;padding:2px 10px;font-size:11px;margin-left:10px;vertical-align:middle}
+@media(max-width:640px){
+.top-bar{padding:0 12px;height:56px}
+.top-bar .logo{font-size:14px;gap:6px}
+.top-bar .nav{overflow-x:auto;gap:0}
+.top-bar .nav button{font-size:11px;padding:6px 8px}
+.main-content{padding:12px}
+.hero-section{padding:28px 20px}
+.hero-section h1{font-size:24px}
+.form-row{grid-template-columns:1fr}
+}
+.dept-select{position:relative}.dept-toggle{display:flex;justify-content:space-between;align-items:center;width:100%;padding:12px 14px;border:.5px solid var(--intensity-8);border-radius:var(--radius-md);background:var(--intensity-4);color:var(--text-primary);font-size:14px;cursor:pointer;font-family:inherit;outline:none}.dept-toggle .dept-chev{color:var(--text-secondary);transition:transform .2s}.dept-panel{display:none;margin-top:8px;border:.5px solid var(--intensity-8);border-radius:var(--radius-md);overflow:hidden;background:var(--intensity-4)}.dept-panel.open{display:block}.dept-opt{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;user-select:none}.dept-opt+.dept-opt{border-top:.5px solid var(--intensity-8)}.dept-opt:hover{background:var(--intensity-8)}.dept-cb{width:22px;height:22px;border-radius:6px;border:2px solid var(--intensity-8);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:transparent;font-size:13px;font-weight:800;transition:all .15s}.dept-opt.sel .dept-cb{background:var(--primary);border-color:var(--primary);color:#fff}.dept-name{flex:1;font-size:14px}.dept-num{min-width:26px;height:26px;border-radius:7px;background:var(--primary);color:#fff;font-size:14px;font-weight:800;display:none;align-items:center;justify-content:center;flex-shrink:0}.dept-opt.sel .dept-num{display:flex}.dept-hint{padding:10px 14px;font-size:12px;color:var(--text-tertiary);text-align:center;border-top:.5px solid var(--intensity-8)}</style>
+</head>
+<body>
+<div class="page-wrap" id="app">
+<div class="top-bar">
+<div class="logo"><div class="icon">🚗</div>车辆与交通学院·团总支学生会</div>
+<div class="nav" id="mainNav">
+<button class="active" data-page="home">首页</button>
+<button data-page="depts">部门介绍</button>
+<button data-page="register">注册</button>
+<button data-page="login">登录</button>
+<button data-page="resume">投递简历</button>
+</div>
+<div class="user-info" id="userInfo">
+<span id="userDisplay" style="display:none"></span>
+<button class="logout-btn" id="logoutBtn" style="display:none">退出</button>
+</div>
+</div>
+<div class="main-content" id="mainContent"></div>
+<div class="footer">© 2026 重庆机电职业技术大学 · 车辆与交通学院 | 渝ICP备12000681号 <span class="cloud-badge">🔗 云端同步已启用</span></div>
+</div>
+<script>
+(function(){
+const DEPT_DATA=[
+{id:'office',name:'办公室',icon:'📋',color:'#2B7BBA',items:[
+{title:'组织策划',desc:'统筹各类团学活动策划落地，负责后勤物资协调与部门联动，助力校园文化建设。'},
+{title:'能力培养',desc:'锻炼公文办公与统筹沟通能力，搭建交流平台，拓展人脉资源。'},
+{title:'资源对接',desc:'对接上级落实团务政策，统筹经费物资全流程管理，统筹调配资源提升使用效率。'},
+{title:'综合统筹',desc:'做好上传下达、文件流转与日常行政事务，衔接各板块工作，保障团总支整体运转顺畅高效。'}
+]},
+{id:'org',name:'组织部',icon:'📌',color:'#E67E22',items:[
+{title:'团务基础统筹',desc:'管理全院团员档案信息，完成团组织关系转接、团费收缴；规范团员入团流程，把控团员基础团务各项工作，夯实团组织根基。'},
+{title:'团日与团课策划',desc:'抓实团员思想引领，策划各类主题团日活动、思政团课；负责推优入党、团员评优评奖工作，设计多样化团建活动，丰富团员思想文化生活。'},
+{title:'能力成长实践',desc:'参与团学综合事务对接，协助各类团务资料整理汇总；学习活动统筹、沟通对接与材料撰写，对接学院各学生组织，在实践中锻炼成长。'}
+]},
+{id:'propaganda',name:'宣传部',icon:'📷',color:'#C41E3A',items:[
+{title:'摄影摄像',desc:'记录学院重大活动，用镜头讲述车辆人的故事，捕捉精彩瞬间。'},
+{title:'文案策划',desc:'撰写新闻稿件、策划宣传活动，用文字传递力量，讲好学院故事。'},
+{title:'设计排版',desc:'海报设计、公众号排版，用创意装点校园生活，打造视觉亮点。'},
+{title:'新媒体运营',desc:'运营学院官方平台，打造校园新媒体矩阵，扩大宣传影响力。'}
+]},
+{id:'study',name:'学习部',icon:'📚',color:'#388E3C',items:[
+{title:'学风建设',desc:'营造良好校园学习氛围，策划学风主题活动，督促开展学风相关工作。'},
+{title:'学习活动举办',desc:'组织知识竞赛、演讲比赛、读书会、学习经验分享会等学术类活动。'},
+{title:'对接师生',desc:'收集同学们在学习中的问题、意见，反馈给任课老师与教务处；传达教学通知。'},
+{title:'活动协助',desc:'配合学生会其他部门，承担讲座、晚会等活动的签到、计分、主持等工作。'},
+{title:'部门日常',desc:'完成学生会交办的其他任务，做好部门活动策划、记录、总结归档。'}
+]},
+{id:'sports',name:'文体部',icon:'🏀',color:'#7B1FA2',items:[
+{title:'点燃文化之火',desc:'策划组织各类文化活动，让才华与创意在舞台绽放！'},
+{title:'跃动青春脉搏',desc:'统筹协调精彩体育活动，点燃赛场激情，凝聚团队力量！'},
+{title:'运筹帷幄掌资源',desc:'学习文体资源管理，保障活动顺利开展，成为幕后实力担当！'},
+{title:'沟通协作促共赢',desc:'参与各部门协作对接，锻炼沟通协调能力，拓展你的校园人脉圈！'}
+]},
+{id:'psychology',name:'生活心理部',icon:'💚',color:'#F9A825',items:[
+{title:'生活督导与数据统筹',desc:'定期开展宿舍安全卫生检查，完成评分记录与数据汇总；对接各年级形成查寝通报，用精细化管理守护宿舍安全。'},
+{title:'权益保障与事务对接',desc:'负责全院学生水卡补贴信息核对与发放；对接活动开展，确保每场活动顺利落地，做校园生活保障的"最后一公里"。'},
+{title:'心理健康与团辅策划',desc:'策划并执行各类主题心理团辅活动、减压工作坊；普及生活心理健康知识，营造有温度、有支持的校园心理氛围。'}
+]}
+];
+const ALL_DEPT_NAMES=DEPT_DATA.map(d=>d.name);
+const MAX_FILE_SIZE=5*1024*1024;
+
+let SESSION={user:null,isAdmin:false,isTerminal:false};
+let RESUMES=[],USERS=[],CURRENT_PAGE='home',CURRENT_TAB='pending',POLL=null;
+
+const container=document.getElementById('mainContent');
+const userDisplay=document.getElementById('userDisplay');
+const logoutBtn=document.getElementById('logoutBtn');
+
+/* ---------------- API 客户端 ---------------- */
+const api={
+token:localStorage.getItem('recruit_token')||'',
+setToken(t){this.token=t||'';if(t)localStorage.setItem('recruit_token',t);else localStorage.removeItem('recruit_token');},
+async req(method,path,body){
+const h={'Content-Type':'application/json'};
+if(this.token)h['Authorization']='Bearer '+this.token;
+const r=await fetch(path,{method:method,headers:h,body:body?JSON.stringify(body):undefined});
+let d={};try{d=await r.json();}catch(e){d={};}
+if(!r.ok){throw new Error(d.error||('请求失败 ('+r.status+')'));}
+return d;
+},
+get(p){return this.req('GET',p);},
+post(p,b){return this.req('POST',p,b);},
+del(p){return this.req('DELETE',p);}
+};
+function setSession(s){SESSION={user:s.user||null,isAdmin:!!s.isAdmin,isTerminal:!!s.isTerminal};}
+
+/* ---------------- 导航 ---------------- */
+function renderNav(){
+document.querySelectorAll('#mainNav button').forEach(b=>{b.classList.remove('active');b.style.display='';});
+const ab=document.getElementById('adminNavBtn');if(ab)ab.remove();
+const rb=document.querySelector('#mainNav button[data-page="register"]');
+const lb=document.querySelector('#mainNav button[data-page="login"]');
+const rmb=document.querySelector('#mainNav button[data-page="resume"]');
+if(SESSION.isAdmin){
+rb.style.display='none';lb.style.display='none';rmb.style.display='none';
+if(!document.getElementById('adminNavBtn')){
+const nb=document.createElement('button');nb.id='adminNavBtn';nb.dataset.page='admin';
+nb.textContent=SESSION.isTerminal?'⚡ 终端管理':'管理后台';
+document.getElementById('mainNav').appendChild(nb);
+nb.addEventListener('click',function(){navigate('admin');});
+}
+}else if(SESSION.user){
+rb.style.display='none';lb.style.display='none';rmb.style.display='';
+}else{
+rb.style.display='';lb.style.display='';rmb.style.display='none';
+}
+if(SESSION.user){
+userDisplay.style.display='';
+userDisplay.textContent=SESSION.isTerminal?'终端管理员':(SESSION.isAdmin?('管理员：'+(SESSION.user.name||'Admin')):(SESSION.user.name||'用户'));
+logoutBtn.style.display='';
+}else{userDisplay.style.display='none';logoutBtn.style.display='none';}
+}
+function navigate(page,deptIdx){
+if(page==='admin'&&!SESSION.isAdmin)page='home';
+if((page==='resume'||page==='userCenter')&&!SESSION.user)page='login';
+CURRENT_PAGE=page;
+localStorage.setItem('recruit_page',page);
+document.querySelectorAll('#mainNav button,#adminNavBtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+Promise.resolve(renderPage(page,deptIdx)).catch(e=>{console.error(e);});
+startPoll();
+window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderPage(page,deptIdx){
+switch(page){
+case'home':renderHome();break;
+case'depts':renderDepts(deptIdx);break;
+case'register':renderRegister();break;
+case'login':renderLogin();break;
+case'resume':return renderResume();
+case'admin':return renderAdmin();
+case'userCenter':return renderUserCenter();
+default:renderHome();
+}
+}
+/* 实时同步轮询 */
+function startPoll(){
+if(POLL){clearInterval(POLL);POLL=null;}
+if(CURRENT_PAGE==='admin'){
+POLL=setInterval(async function(){
+if(CURRENT_PAGE!=='admin')return;
+try{const d=await api.get('/api/resumes');
+if(JSON.stringify(d.resumes)!==JSON.stringify(RESUMES)){RESUMES=d.resumes;renderAdminShell();}}catch(e){}
+},4000);
+}else if(CURRENT_PAGE==='userCenter'){
+POLL=setInterval(async function(){
+if(CURRENT_PAGE!=='userCenter')return;
+try{const d=await api.get('/api/resumes/mine');renderUserCenterBody(d.resume);}catch(e){}
+},4000);
+}
+}
+
+/* ---------------- 首页 ---------------- */
+function renderHome(){
+container.innerHTML=`
+<div class="hero-section">
+<div class="hero-tag">🔥 2026年秋季招新正式启动</div>
+<h1>车辆与交通学院</h1>
+<h2 style="font-size:20px;font-weight:500;margin-bottom:14px;position:relative;opacity:.95;">团总支·学生会欢迎你的加入</h2>
+<p>六大部门，六个舞台。无论你想锻炼自己、服务同学还是结交挚友，这里都有属于你的位置。用热情点亮青春，用行动书写故事！</p>
+</div>
+<div class="card"><h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">🏛️ 六大部门一览</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">${DEPT_DATA.map((d,i)=>`<div style="padding:14px;background:var(--intensity-4);border-radius:var(--radius-md);text-align:center;cursor:pointer;" onclick="window._navigate('depts',${i})"><div style="font-size:28px;margin-bottom:6px;">${d.icon}</div><div style="font-size:13px;font-weight:500;">${d.name}</div></div>`).join('')}</div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">${!SESSION.user?`<button class="btn btn-primary" onclick="window._navigate('register')">📝 立即注册报名</button><button class="btn btn-secondary" onclick="window._navigate('depts')">🔍 了解部门详情</button><button class="btn btn-secondary" onclick="window._navigate('login')">🔑 已有账号登录</button>`:`<button class="btn btn-primary" onclick="window._navigate('resume')">📝 投递简历</button><button class="btn btn-secondary" onclick="window._navigate('depts')">🔍 了解部门详情</button>`}</div></div>`;
+}
+function renderDepts(idx){idx=parseInt(idx)||0;if(idx<0||idx>=DEPT_DATA.length)idx=0;
+container.innerHTML=`<div class="section-title">🏛️ 部门介绍</div><div class="dept-tabs" id="deptTabs">${DEPT_DATA.map((d,i)=>`<button class="${i===idx?'active':''}" data-didx="${i}">${d.icon} ${d.name}</button>`).join('')}</div><div id="deptDetail">${buildDeptDetail(idx)}</div>`;
+document.querySelectorAll('#deptTabs button').forEach(b=>{b.addEventListener('click',function(){document.querySelectorAll('#deptTabs button').forEach(bb=>bb.classList.remove('active'));this.classList.add('active');document.getElementById('deptDetail').innerHTML=buildDeptDetail(parseInt(this.dataset.didx));});});
+}
+function buildDeptDetail(idx){const d=DEPT_DATA[idx];const bgs=['#E8F4FD','#FFF3E0','#FCE4EC','#E8F5E9','#F3E5F5','#FFF8E1'][idx]||'var(--intensity-4)';return `<div class="card"><div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:.5px solid var(--intensity-8);"><div style="width:52px;height:52px;border-radius:12px;background:${bgs};display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">${d.icon}</div><div><h3 style="font-size:20px;font-weight:600;color:${d.color};">${d.name}</h3><p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">车辆与交通学院团总支·学生会</p></div></div><div style="display:grid;gap:16px;">${d.items.map(item=>`<div style="background:var(--intensity-4);border-radius:var(--radius-md);padding:16px;border-left:3px solid ${d.color};"><div style="font-size:14px;font-weight:600;margin-bottom:6px;color:${d.color};">${item.title}</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${item.desc}</div></div>`).join('')}</div>${!SESSION.user?`<div style="margin-top:20px;"><button class="btn btn-primary" onclick="window._navigate('register')">📝 立即报名加入</button></div>`:`<div style="margin-top:20px;"><button class="btn btn-primary" onclick="window._navigate('resume')">📝 投递简历</button></div>`}</div>`;}
+
+/* ---------------- 注册 ---------------- */
+function renderRegister(){
+container.innerHTML=`<div style="max-width:480px;margin:0 auto;"><div class="card"><h3 style="font-size:18px;font-weight:600;margin-bottom:20px;">📝 用户注册</h3><div id="regAlert" class="hidden"></div><div class="form-group"><label>学号</label><input id="regStudentId" placeholder="请输入14位学号"></div><div class="form-row"><div class="form-group"><label>姓名</label><input id="regName" placeholder="请输入姓名"></div><div class="form-group"><label>班级</label><input id="regClass" placeholder="如：车辆工程2301"></div></div><div class="form-group"><label>手机号</label><input id="regPhone" placeholder="请输入手机号"></div><div class="form-group"><label>邮箱</label><input id="regEmail" placeholder="请输入邮箱（选填）"></div><div class="form-group"><label>密码</label><input id="regPwd" type="password" placeholder="请设置密码（至少6位）"></div><div class="form-group"><label>确认密码</label><input id="regPwd2" type="password" placeholder="请再次输入密码"></div><button class="btn btn-primary btn-block" id="regBtn">注册</button><div class="auth-switch">已有账号？<a onclick="window._navigate('login')">立即登录</a></div></div></div>`;
+document.getElementById('regBtn').addEventListener('click',async function(){
+const sid=document.getElementById('regStudentId').value.trim(),name=document.getElementById('regName').value.trim(),cls=document.getElementById('regClass').value.trim(),phone=document.getElementById('regPhone').value.trim(),email=document.getElementById('regEmail').value.trim(),pwd=document.getElementById('regPwd').value,pwd2=document.getElementById('regPwd2').value,al=document.getElementById('regAlert'),btn=this;
+if(!sid){al.className='alert';al.textContent='请输入学号';return}
+if(sid.length!==14||!/^\d+$/.test(sid)){al.className='alert';al.textContent='学号需为14位数字';return}
+if(!name){al.className='alert';al.textContent='请输入姓名';return}
+if(!cls){al.className='alert';al.textContent='请输入班级';return}
+if(!phone){al.className='alert';al.textContent='请输入手机号';return}
+if(pwd.length<6){al.className='alert';al.textContent='密码至少6位';return}
+if(pwd!==pwd2){al.className='alert';al.textContent='两次密码输入不一致';return}
+btn.disabled=true;
+try{
+await api.post('/api/register',{studentId:sid,name:name,class:cls,phone:phone,email:email,password:pwd});
+al.className='alert alert-success';al.textContent='🎉 注册成功！请登录';
+setTimeout(()=>navigate('login'),800);
+}catch(e){al.className='alert';al.textContent=e.message;btn.disabled=false;}
+});
+}
+
+/* ---------------- 登录 ---------------- */
+function renderLogin(){
+container.innerHTML=`<div style="max-width:440px;margin:0 auto;"><div class="card"><div class="login-toggle"><button class="active" id="userLoginTab">用户登录</button><button id="adminLoginTab">管理员登录</button></div><div id="loginAlert" class="hidden"></div><div id="userLoginForm"><div class="form-group"><label>学号</label><input id="loginStudentId" placeholder="请输入学号"></div><div class="form-group"><label>密码</label><input id="loginPwd" type="password" placeholder="请输入密码"></div><button class="btn btn-primary btn-block" id="loginBtn">登录</button><div class="auth-switch">还没有账号？<a onclick="window._navigate('register')">立即注册</a></div></div><div id="adminLoginForm" class="hidden"><div class="form-group"><label>管理员账号</label><input id="adminUser" placeholder="请输入管理员学号"></div><div class="form-group"><label>管理员密码</label><input id="adminPwd" type="password" placeholder="请输入管理员密码"></div><button class="btn btn-primary btn-block" id="adminLoginBtn">管理员登录</button></div></div></div>`;
+document.getElementById('userLoginTab').addEventListener('click',function(){this.classList.add('active');document.getElementById('adminLoginTab').classList.remove('active');document.getElementById('userLoginForm').classList.remove('hidden');document.getElementById('adminLoginForm').classList.add('hidden');document.getElementById('loginAlert').className='hidden';});
+document.getElementById('adminLoginTab').addEventListener('click',function(){this.classList.add('active');document.getElementById('userLoginTab').classList.remove('active');document.getElementById('adminLoginForm').classList.remove('hidden');document.getElementById('userLoginForm').classList.add('hidden');document.getElementById('loginAlert').className='hidden';});
+document.getElementById('loginBtn').addEventListener('click',async function(){
+const sid=document.getElementById('loginStudentId').value.trim(),pwd=document.getElementById('loginPwd').value,al=document.getElementById('loginAlert'),btn=this;
+if(!sid||!pwd){al.className='alert';al.textContent='请输入学号和密码';return}
+btn.disabled=true;
+try{const r=await api.post('/api/login',{studentId:sid,password:pwd});api.setToken(r.token);setSession(r);renderNav();navigate('userCenter');}
+catch(e){al.className='alert';al.textContent=e.message;btn.disabled=false;}
+});
+document.getElementById('adminLoginBtn').addEventListener('click',async function(){
+const sid=document.getElementById('adminUser').value.trim(),pwd=document.getElementById('adminPwd').value,al=document.getElementById('loginAlert'),btn=this;
+if(!sid||!pwd){al.className='alert';al.textContent='请输入管理员账号和密码';return}
+btn.disabled=true;
+try{const r=await api.post('/api/admin/login',{studentId:sid,password:pwd});api.setToken(r.token);setSession(r);renderNav();navigate('admin');}
+catch(e){al.className='alert';al.textContent=e.message;btn.disabled=false;}
+});
+setTimeout(function(){
+const logo=document.querySelector('.top-bar .logo');
+if(logo)logo.addEventListener('dblclick',function(){
+var ov=document.createElement('div');ov.className='modal-overlay';
+ov.innerHTML='<div class="modal-card" style="max-width:360px;"><button class="modal-close" id="tCloseBtn">✕</button><div class="modal-title">🔐 终端管理员</div><div id="tAlert" class="hidden"></div><div class="form-group"><label>终端账号</label><input id="tUser" placeholder="请输入终端账号"></div><div class="form-group"><label>终端密码</label><input id="tPwd" type="password" placeholder="请输入终端密码"></div><button class="btn btn-primary btn-block" id="tLoginBtn">登录</button></div>';
+document.body.appendChild(ov);
+document.getElementById('tCloseBtn').addEventListener('click',function(){ov.remove();});
+ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+document.getElementById('tLoginBtn').addEventListener('click',async function(){
+var tu=document.getElementById('tUser').value.trim(),tp=document.getElementById('tPwd').value,ta=document.getElementById('tAlert'),tb=this;
+tb.disabled=true;
+try{const r=await api.post('/api/terminal/login',{username:tu,password:tp});api.setToken(r.token);setSession(r);ov.remove();renderNav();navigate('admin');}
+catch(e){ta.className='alert';ta.textContent=e.message;tb.disabled=false;}
+});
+});
+},100);
+}
+
+/* ---------------- 投递简历 ---------------- */
+async function renderResume(){
+if(!SESSION.user||SESSION.isAdmin){renderLogin();return}
+let existing=null;
+try{const d=await api.get('/api/resumes/mine');existing=d.resume;}catch(e){}
+container.innerHTML=`<div style="max-width:640px;margin:0 auto;">${existing?renderResumeStatus(existing):renderResumeForm()}</div>`;
+if(!existing){
+let fileData=null;
+document.getElementById('resFileInput').addEventListener('change',function(e){
+const file=e.target.files[0];if(!file){fileData=null;updateFileUI(null);return}
+if(file.size>MAX_FILE_SIZE){alert('文件大小不能超过5MB');this.value='';fileData=null;updateFileUI(null);return}
+const reader=new FileReader();
+reader.onload=function(ev){fileData={name:file.name,size:file.size,type:file.type,data:ev.target.result};updateFileUI(fileData);};
+reader.readAsDataURL(file);
+});
+function updateFileUI(fd){
+const zone=document.querySelector('.upload-zone'),display=document.getElementById('fileDisplay');
+if(!zone)return;
+if(fd){zone.classList.add('has-file');const ext=fd.name.split('.').pop().toLowerCase();const isImg=['png','jpg','jpeg','gif','webp','bmp'].includes(ext);display.innerHTML=`<div class="file-preview-card"><div class="fp-icon">${isImg?'🖼️':'📄'}</div><div class="fp-info"><div class="fp-name">${fd.name}</div><div class="fp-size">${(fd.size/1024).toFixed(1)} KB</div></div></div>`;}
+else{zone.classList.remove('has-file');display.innerHTML=`<div class="uz-icon">📎</div><div class="uz-title">点击上传附件</div><div class="uz-hint">支持图片、PDF、Word等格式，不超过5MB</div>`;}
+}
+registerDeptPicker();
+document.getElementById('submitResume').addEventListener('click',async function(){
+const name=document.getElementById('resName').value.trim(),cls=document.getElementById('resClass').value.trim(),phone=document.getElementById('resPhone').value.trim(),email=document.getElementById('resEmail').value.trim(),intro=document.getElementById('resIntro').value.trim(),skills=document.getElementById('resSkills').value.trim(),awards=document.getElementById('resAwards').value.trim(),prevPos=document.getElementById('resPrevPos').value.trim(),al=document.getElementById('resumeAlert'),btn=this;
+if(!name||!cls||!phone){al.className='alert';al.textContent='请填写必填字段';return}
+const depts=(typeof window._getDeptOrder==='function'?window._getDeptOrder():[]);
+if(depts.length===0){al.className='alert';al.textContent='请至少选择一个意向部门';return}
+if(depts.length>3){al.className='alert';al.textContent='最多可选择3个意向部门';return}
+btn.disabled=true;btn.textContent='提交中...';
+try{
+await api.post('/api/resumes',{name:name,className:cls,phone:phone,email:email,departments:depts,intro:intro,skills:skills,awards:awards,prevPosition:prevPos,file:fileData});
+await renderResume();
+}catch(e){al.className='alert';al.textContent=e.message;btn.disabled=false;btn.textContent='提交简历';}
+});
+}else if(existing.status==='rejected'){
+const b=document.getElementById('reapplyBtn');
+if(b)b.addEventListener('click',async function(){
+b.disabled=true;
+try{await api.del('/api/resumes/'+existing.id);await renderResume();}
+catch(e){alert(e.message);b.disabled=false;}
+});
+}
+}
+function renderResumeForm(){
+const u=SESSION.user;
+return `<div class="card"><h3 style="font-size:18px;font-weight:600;margin-bottom:6px;">📄 投递简历</h3><p style="font-size:13px;color:var(--text-secondary);margin-bottom:18px;">选择一个或多个意向部门（最多可选 <strong>3</strong> 个）</p><div id="resumeAlert" class="hidden"></div>
+<div class="form-group"><label>姓名</label><input id="resName" value="${u.name||''}" placeholder="请输入姓名"></div>
+<div class="form-row"><div class="form-group"><label>学号</label><input id="resStudentId" value="${u.studentId||''}" readonly style="background:var(--intensity-6)"></div><div class="form-group"><label>班级</label><input id="resClass" value="${u.class||''}" placeholder="如：车辆工程2301"></div></div>
+<div class="form-row"><div class="form-group"><label>手机号</label><input id="resPhone" value="${u.phone||''}" placeholder="请输入手机号"></div><div class="form-group"><label>邮箱</label><input id="resEmail" value="${u.email||''}" placeholder="请输入邮箱"></div></div>
+<div class="form-group"><label>请选择加入部门：</label><div class="dept-select"><button type="button" class="dept-toggle" id="deptToggle"><span id="deptToggleLabel">请选择加入部门</span><span class="dept-chev">▾</span></button><div class="dept-panel" id="deptPanel">${DEPT_DATA.map(d=>`<span class="dept-opt" data-name="${d.name}"><span class="dept-cb">✓</span><span class="dept-name">${d.icon} ${d.name}</span><span class="dept-num"></span></span>`).join('')}<div class="dept-hint" id="deptHint">最多选择3个部门，数字代表志愿顺序</div></div></div></div><div class="form-group"><label>个人简介</label><textarea id="resIntro" placeholder="请简要介绍自己，包括兴趣爱好、相关经历、加入理由等..." style="height:100px"></textarea></div>
+<div class="form-group"><label>特长与技能</label><textarea id="resSkills" placeholder="如：摄影、视频剪辑、文案写作、PS设计、公众号运营、活动策划等" style="height:70px"></textarea></div>
+<div class="form-row"><div class="form-group"><label>获奖情况</label><textarea id="resAwards" placeholder="如：校级奖学金、竞赛获奖、荣誉称号等" style="height:70px"></textarea></div><div class="form-group"><label>曾任职务</label><textarea id="resPrevPos" placeholder="如：班长、团支书、社团负责人等" style="height:70px"></textarea></div></div>
+<div class="form-group"><label>上传附件（简历/作品集）</label>
+<div class="upload-zone" id="uploadZone"><input type="file" id="resFileInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp">
+<div id="fileDisplay"><div class="uz-icon">📎</div><div class="uz-title">点击上传附件</div><div class="uz-hint">支持图片、PDF、Word等格式，不超过5MB</div></div></div></div>
+<button class="btn btn-primary btn-block" id="submitResume">提交简历</button></div>`;
+}
+function renderResumeStatus(r){
+const deptName=r.admittedDepartment||'';
+const hasFile=r.file&&r.file.data;
+const isReallocate=r.admittedType==='reallocate';
+return `<div class="success-anim"><div class="check">✅</div>
+${r.status==='admitted'?`<h3>🎉 恭喜你已被 <span style="color:${isReallocate?'#58B2DC':'var(--primary)'};">${deptName}</span> 录取</h3>`:r.status==='rejected'?`<h3>很遗憾，本次未被录取</h3>`:`<h3>简历已投递成功</h3>`}
+<p>${r.status==='admitted'?'欢迎加入车辆与交通学院团总支·学生会'+deptName+'！请留意后续通知。':r.status==='rejected'?'本次招新名额有限，你可以重新投递简历。':'你的简历已成功提交，请耐心等待审核结果。'}</p>
+${r.status==='admitted'?`
+<div class="congrats-box" style="${isReallocate?'background:linear-gradient(135deg,color-mix(in srgb,#58B2DC 10%,transparent),color-mix(in srgb,#58B2DC 5%,transparent));border-color:color-mix(in srgb,#58B2DC 30%,transparent);':''}">
+<div class="big-icon">🎉</div>
+<h3 style="${isReallocate?'color:#58B2DC;':''}">恭喜你已被 ${isReallocate?'调剂至 ':'被 '}${deptName} 录取</h3>
+<p style="color:var(--text-secondary);margin-top:8px;font-size:14px;">欢迎加入车辆与交通学院团总支·学生会${deptName}！我们期待与你一起，为学院贡献青春力量！</p>
+</div>`:r.status==='rejected'?`
+<div style="margin-top:16px;text-align:center;">
+<button class="btn btn-primary" id="reapplyBtn">📝 重新投递简历</button>
+</div>`:''}
+</div>
+<div style="padding:16px;background:var(--intensity-4);border-radius:var(--radius-md);">
+<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>姓名：</strong>${r.name}</p>
+<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>班级：</strong>${r.className}</p>
+<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>意向部门：</strong><span class="chip-group">${r.departments.map((d,i)=>`<span class="chip${r.admittedDepartment===d?' chip-admitted':''}">${i+1}.${d}${r.admittedDepartment===d?' ✅':''}</span>`).join('')}</span></p>
+${r.awards?`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>获奖情况：</strong>${r.awards}</p>`:''}
+${r.prevPosition?`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>曾任职务：</strong>${r.prevPosition}</p>`:''}
+${hasFile?`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>附件：</strong><span style="color:var(--success);">✅ ${r.file.name}</span>（${(r.file.size/1024).toFixed(1)}KB）</p>`:''}
+<p style="font-size:13px;color:var(--text-secondary);"><strong>状态：</strong>
+${r.status==='pending'?'<span class="status-pending">⏳ 审核中</span>':r.status==='admitted'?`<span class="status-admitted">✅ 已录取 · ${deptName}</span>`:'<span class="status-rejected">❌ 未录取</span>'}</p></div>`;
+}
+
+/* ---------------- 用户中心 ---------------- */
+async function renderUserCenter(){
+if(!SESSION.user){renderLogin();return}
+let resume=null;
+try{const d=await api.get('/api/resumes/mine');resume=d.resume;}catch(e){}
+renderUserCenterBody(resume);
+}
+function renderUserCenterBody(resume){
+if(CURRENT_PAGE!=='userCenter')return;
+if(!SESSION.user){renderLogin();return}
+const u=SESSION.user;
+const deptName=resume?resume.admittedDepartment:'';
+const hasFile=resume&&resume.file&&resume.file.data;
+const isReallocate=resume&&resume.admittedType==='reallocate';
+container.innerHTML=`<div style="max-width:640px;margin:0 auto;"><div class="card" style="margin-bottom:16px;"><div style="display:flex;align-items:center;gap:16px;"><div style="width:56px;height:56px;border-radius:50%;background:color-mix(in srgb,var(--primary) 15%,transparent);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--primary);font-weight:600;">${(u.name||'?')[0]}</div><div><h3 style="font-size:17px;font-weight:600;">${u.name||'同学'}</h3><p style="font-size:13px;color:var(--text-secondary);">${u.class||''} · ${u.studentId||''}</p></div></div></div>
+${resume?`<div class="card"><h4 style="font-size:15px;font-weight:600;margin-bottom:12px;">📋 我的申请</h4><div style="padding:12px 0;border-bottom:.5px solid var(--intensity-6)"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><p style="font-size:14px;font-weight:500;">意向部门</p><p style="font-size:12px;color:var(--text-secondary);margin-top:4px;">提交时间：${new Date(resume.submittedAt).toLocaleDateString('zh-CN')}</p></div>${resume.status==='pending'?'<span class="status-pending">⏳ 审核中</span>':resume.status==='admitted'?`<span class="status-admitted">✅ 已录取 · ${deptName}</span>`:'<span class="status-rejected">❌ 未录取</span>'}</div><div style="margin-top:8px;" class="chip-group">${(resume.departments||[]).map((d,i)=>`<span class="chip${resume.admittedDepartment===d?' chip-admitted':''}">${i+1}.${d}${resume.admittedDepartment===d?' ✅':''}</span>`).join('')}</div>${hasFile?`<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);"><strong>附件：</strong><span style="color:var(--success);">✅ ${resume.file.name}</span></div>`:''}</div>
+${resume.status==='admitted'?`<div class="congrats-box" style="margin-top:12px;${isReallocate?'background:linear-gradient(135deg,color-mix(in srgb,#58B2DC 10%,transparent),color-mix(in srgb,#58B2DC 5%,transparent));border-color:color-mix(in srgb,#58B2DC 30%,transparent);':''}"><div class="big-icon">🎉</div><h3 style="${isReallocate?'color:#58B2DC;':''}">恭喜你已被 ${isReallocate?'调剂至':'被'} ${deptName} 录取</h3><p style="color:var(--text-secondary);margin-top:6px;font-size:13px;">欢迎加入车辆与交通学院团总支·学生会${deptName}大家庭！</p></div>`:''}
+${resume.status==='pending'?`<div style="margin-top:12px;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);text-align:center;">⏳ 你的简历正在审核中，请耐心等待～</div>`:''}
+${resume.status==='rejected'?`<div style="margin-top:12px;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);text-align:center;">本次招新未被录取，你可以<button class="btn btn-primary btn-sm" id="reapplyBtn2" style="margin-left:8px;">重新投递</button></div>`:''}
+</div>`:`<div class="card" style="text-align:center;padding:32px;"><p style="font-size:15px;color:var(--text-secondary);margin-bottom:16px;">你还没有投递简历哦～</p><button class="btn btn-primary" onclick="window._navigate('resume')">📝 立即投递简历</button></div>`}
+<div class="card-sm" style="margin-top:12px;"><h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">👤 个人信息</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;color:var(--text-secondary);"><p><strong>学号：</strong>${u.studentId||'-'}</p><p><strong>姓名：</strong>${u.name||'-'}</p><p><strong>班级：</strong>${u.class||'-'}</p><p><strong>手机：</strong>${u.phone||'-'}</p><p><strong>邮箱：</strong>${u.email||'-'}</p></div><button class="btn btn-danger btn-sm" id="deleteAccountBtn" style="margin-top:14px;width:100%;">🗑️ 注销账户（永久删除我的账号与全部数据）</button><div style="font-size:12px;color:var(--text-tertiary);margin-top:6px;text-align:center;">注销后该账号及简历、投递记录将被彻底清除，需重新注册才能登录，此操作不可恢复。</div></div></div>`;
+if(resume&&resume.status==='rejected'){
+const btn=document.getElementById('reapplyBtn2');
+if(btn)btn.addEventListener('click',async function(){
+btn.disabled=true;
+try{await api.del('/api/resumes/'+resume.id);navigate('resume');}
+catch(e){alert(e.message);btn.disabled=false;}
+});
+}
+const delAcc=document.getElementById('deleteAccountBtn');
+if(delAcc)delAcc.addEventListener('click',async function(){
+if(!confirm('⚠️ 确定要注销账户吗？\n\n你的账号、简历及全部投递记录将被永久删除，且无法恢复。注销后需重新注册才能登录。'))return;
+if(!confirm('再次确认：这是不可恢复的操作，真的要永久删除吗？'))return;
+delAcc.disabled=true;
+try{await api.del('/api/account');api.setToken('');SESSION={user:null,isAdmin:false,isTerminal:false};alert('✅ 账户已注销');navigate('home');}
+catch(e){alert(e.message);delAcc.disabled=false;}
+});
+}
+
+/* ---------------- 管理后台 ---------------- */
+async function renderAdmin(){
+if(!SESSION.isAdmin){renderLogin();return}
+try{const d=await api.get('/api/resumes');RESUMES=d.resumes;}catch(e){}
+renderAdminShell();
+}
+function renderAdminShell(){
+if(CURRENT_PAGE!=='admin')return;
+const resumes=RESUMES;
+const pending=resumes.filter(r=>r.status==='pending');
+const admitted=resumes.filter(r=>r.status==='admitted');
+const rejected=resumes.filter(r=>r.status==='rejected');
+const userTabHtml=SESSION.isTerminal?`<button data-atab="users">用户管理</button>`:'';
+container.innerHTML=`<div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;"><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--primary);">${resumes.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">总投递数</div></div><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--warning);">${pending.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">待审核</div></div><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--success);">${admitted.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">已录取</div></div><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--destructive);">${rejected.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">未录取</div></div></div>
+<div class="card" style="margin-bottom:20px;padding:16px"><div style="font-size:14px;font-weight:600;margin-bottom:12px">🏛️ 六部门录取人数统计</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">${ALL_DEPT_NAMES.map(dn=>{const c=admitted.filter(r=>r.admittedDepartment===dn).length;const t=resumes.filter(r=>(r.departments||[]).includes(dn)).length;return `<div style="text-align:center;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md)"><div style="font-size:22px;font-weight:600;color:var(--primary)">${c}</div><div style="font-size:12px;font-weight:500;margin-top:2px">${dn}</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:2px">意向 ${t} 人</div></div>`;}).join('')}</div></div>
+<div class="tab-bar"><button class="${CURRENT_TAB==='pending'?'active':''}" data-atab="pending">待审核 (${pending.length})</button><button class="${CURRENT_TAB==='all'?'active':''}" data-atab="all">全部 (${resumes.length})</button><button class="${CURRENT_TAB==='admitted'?'active':''}" data-atab="admitted">已录取 (${admitted.length})</button><button class="${CURRENT_TAB==='rejected'?'active':''}" data-atab="rejected">未录取 (${rejected.length})</button>${userTabHtml}</div>
+<div id="adminTableContainer"></div></div>`;
+document.querySelectorAll('.tab-bar button').forEach(b=>{b.addEventListener('click',function(){document.querySelectorAll('.tab-bar button').forEach(bb=>bb.classList.remove('active'));this.classList.add('active');CURRENT_TAB=this.dataset.atab;renderAdminTable(CURRENT_TAB);});});
+renderAdminTable(CURRENT_TAB);
+}
+async function renderAdminTable(tab){
+const tc=document.getElementById('adminTableContainer');
+if(!tc)return;
+if(tab==='users'){
+try{const d=await api.get('/api/users');USERS=d.users;renderUserManagement(d);}catch(e){tc.innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--text-secondary);">加载失败：'+e.message+'</div>';}
+return;
+}
+let list=[];
+if(tab==='pending')list=RESUMES.filter(r=>r.status==='pending');
+else if(tab==='admitted')list=RESUMES.filter(r=>r.status==='admitted');
+else if(tab==='rejected')list=RESUMES.filter(r=>r.status==='rejected');
+else list=[...RESUMES];
+if(list.length===0){tc.innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--text-secondary);font-size:14px;">暂无数据</div>';return}
+let html=`<div class="card" style="padding:0;overflow:hidden;"><div class="table-wrap"><table><thead><tr><th>姓名</th><th>学号</th><th>班级</th><th>意向部门</th><th>附件</th><th>时间</th><th>状态</th><th>操作</th></tr></thead><tbody>`;
+list.forEach(r=>{
+const deptDisplay=r.departments?r.departments.map((d,i)=>{const ia=r.admittedDepartment===d;const ir=r.admittedType==='reallocate'&&ia;return `<span class="chip${ia?ir?' chip-reallocate':' chip-admitted':''}" style="font-size:10px;height:20px;padding:0 6px;">${i+1}.${d}${ia?' ✅':''}</span>`;}).join(' '):'-';
+const hasFile=r.file&&r.file.data;
+html+=`<tr>
+<td>${r.name}</td>
+<td>${r.studentId||'-'}</td>
+<td>${r.className||'-'}</td>
+<td><div class="chip-group">${deptDisplay}</div></td>
+<td>${hasFile?`<button class="btn btn-secondary btn-sm" data-act="preview" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:26px;">👁️</button><button class="btn btn-secondary btn-sm" data-act="download" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:26px;">⬇️</button>`:'<span style="font-size:12px;color:var(--text-tertiary);">无</span>'}</td>
+<td>${new Date(r.submittedAt).toLocaleDateString('zh-CN')}</td>
+<td>${r.status==='pending'?'<span class="status-pending">⏳ 待审核</span>':r.status==='admitted'?(r.admittedType==='reallocate'?`<span class="status-reallocate">🔵 已调剂至 ${r.admittedDepartment||''}</span>`:`<span class="status-admitted">✅ 已被 ${r.admittedDepartment||''} 录取</span>`):'<span class="status-rejected">❌ 未录取</span>'}</td>
+<td style="display:flex;gap:4px;flex-wrap:wrap;max-width:210px;">${r.status==='pending'?renderAdmitActions(r):`<span style="font-size:12px;font-weight:500;">${r.status==='admitted'?(r.admittedType==='reallocate'?'<span style="color:#58B2DC;">🔵 已调剂</span>':'<span style="color:var(--success);">✅ 已录取</span>'):'<span style="color:var(--destructive);">— 未录取</span>'}</span><button class="btn btn-danger btn-sm" data-act="delete" data-rid="${r.id}" style="font-size:11px;padding:0 6px;height:24px;">🗑️ 删除</button>`}</td>
+</tr>`;
+if(r.status==='pending'){
+html+=`<tr id="dtl_${r.id}" class="hidden"><td colspan="8" style="padding:12px 16px;background:var(--intensity-3);"><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;"><p><strong>简介：</strong>${r.intro||'无'}</p><p style="margin-top:4px;"><strong>技能：</strong>${r.skills||'无'}</p><p style="margin-top:4px;"><strong>获奖：</strong>${r.awards||'无'}</p><p style="margin-top:4px;"><strong>职务：</strong>${r.prevPosition||'无'}</p>${hasFile?`<p style="margin-top:4px;"><strong>附件：</strong>${r.file.name}（${(r.file.size/1024).toFixed(1)}KB）<button class="btn btn-success btn-sm" data-act="preview" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:26px;margin-left:8px;">👁️</button><button class="btn btn-secondary btn-sm" data-act="download" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:26px;margin-left:4px;">⬇️</button></p>`:''}</div></td></tr>`;
+}
+});
+html+=`</tbody></table></div></div>`;
+tc.innerHTML=html;
+tc.querySelectorAll('[data-act="admit"]').forEach(btn=>{btn.addEventListener('click',async function(){btn.disabled=true;try{await api.post('/api/resumes/'+this.dataset.rid+'/admit',{department:this.dataset.dept});alert('✅ 已录取 '+ (this.dataset.dept));await reloadAdmin();}catch(e){alert(e.message);btn.disabled=false;}});});
+tc.querySelectorAll('[data-act="reallocate"]').forEach(btn=>{btn.addEventListener('click',async function(){const rid=this.dataset.rid;const sel=document.getElementById('realloc_'+rid);const dept=sel?sel.value:'';if(!dept){alert('请选择一个部门');return}btn.disabled=true;try{await api.post('/api/resumes/'+rid+'/reallocate',{department:dept});alert('🔵 已调剂至 '+dept);await reloadAdmin();}catch(e){alert(e.message);btn.disabled=false;}});});
+tc.querySelectorAll('[data-act="reject"]').forEach(btn=>{btn.addEventListener('click',async function(){btn.disabled=true;try{await api.post('/api/resumes/'+this.dataset.rid+'/reject',{});await reloadAdmin();}catch(e){alert(e.message);btn.disabled=false;}});});
+tc.querySelectorAll('[data-act="detail"]').forEach(btn=>{btn.addEventListener('click',function(){const rid=this.dataset.rid,row=document.getElementById('dtl_'+rid);if(row)row.classList.toggle('hidden');});});
+tc.querySelectorAll('[data-act="preview"]').forEach(btn=>{btn.addEventListener('click',function(){const rid=this.dataset.rid,resume=RESUMES.find(r=>r.id===rid);if(!resume||!resume.file)return;previewFile(resume.file);});});
+tc.querySelectorAll('[data-act="download"]').forEach(btn=>{btn.addEventListener('click',function(){const rid=this.dataset.rid,resume=RESUMES.find(r=>r.id===rid);if(!resume||!resume.file)return;downloadFile(resume.file);});});
+tc.querySelectorAll('[data-act="delete"]').forEach(btn=>{btn.addEventListener('click',async function(){if(!confirm('确定要删除该简历吗？此操作不可恢复。'))return;btn.disabled=true;try{await api.del('/api/resumes/'+this.dataset.rid);await reloadAdmin();}catch(e){alert(e.message);btn.disabled=false;}});});
+}
+async function reloadAdmin(){
+try{const d=await api.get('/api/resumes');RESUMES=d.resumes;}catch(e){}
+renderAdminShell();
+}
+function renderAdmitActions(r){
+const depts=r.departments||[];
+let html=`<button class="btn btn-secondary btn-sm" data-act="detail" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:26px;">详情</button>
+<div style="display:flex;flex-direction:column;gap:4px;width:100%;border-bottom:.5px solid var(--intensity-6);padding-bottom:4px;margin-bottom:4px;">
+<div style="font-size:10px;font-weight:500;color:var(--success);">录取至意向部门</div>`;
+depts.forEach((d,i)=>{html+=`<button class="btn btn-success btn-sm" data-act="admit" data-rid="${r.id}" data-dept="${d}" style="font-size:11px;padding:0 8px;height:24px;">录取至 ${i+1}.${d}</button>`;});
+html+=`</div>`;
+const otherDepts=ALL_DEPT_NAMES.filter(d=>!depts.includes(d));
+html+=`<div style="display:flex;flex-direction:column;gap:4px;width:100%;border-bottom:.5px solid var(--intensity-6);padding-bottom:4px;margin-bottom:4px;">
+<div style="font-size:10px;font-weight:500;color:#58B2DC;">调剂至其他部门</div>
+<div style="display:flex;gap:4px;"><select id="realloc_${r.id}" class="sel-reallocate"><option value="">请选择</option>${otherDepts.map(d=>`<option value="${d}">${d}</option>`).join('')}</select>
+<button class="btn btn-sm" data-act="reallocate" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:28px;background:#58B2DC;color:#fff;border:0;border-radius:6px;white-space:nowrap;">调剂</button></div></div>`;
+html+=`<button class="btn btn-danger btn-sm" data-act="reject" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:26px;width:100%;">不录取（可重新投递）</button>`;
+return html;
+}
+
+/* ---------------- 用户管理（终端管理员） ---------------- */
+function renderUserManagement(d){
+const tc=document.getElementById('adminTableContainer');
+if(!tc)return;
+const users=d.users||[];
+const maxAdmins=d.maxAdmins||100;
+const resumesOf=d.resumes||[];
+const adminCount=users.filter(u=>u.isAdmin).length;
+const prev=document.getElementById('userSearchInput');
+const searchTerm=prev?prev.value.trim().toLowerCase():'';
+let filtered=users;
+if(searchTerm){filtered=users.filter(u=>(u.name||'').toLowerCase().includes(searchTerm)||(u.studentId||'').toLowerCase().includes(searchTerm)||(u.class||'').toLowerCase().includes(searchTerm)||(u.phone||'').toLowerCase().includes(searchTerm));}
+let html='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;"><h4 style="font-size:15px;font-weight:600;">👥 用户管理</h4><span style="font-size:12px;color:var(--text-secondary);">管理员：'+adminCount+'/'+maxAdmins+'</span></div><div class="form-group" style="margin-bottom:12px;"><input id="userSearchInput" placeholder="🔍 搜索姓名/学号/班级/手机号..." value="'+(searchTerm||'')+'" style="height:36px;"></div>';
+if(filtered.length===0){html+='<div style="text-align:center;padding:20px;color:var(--text-secondary);font-size:13px;">未找到匹配用户</div>';}
+else{
+html+='<div class="table-wrap"><table><thead><tr><th>姓名</th><th>学号</th><th>班级</th><th>手机</th><th>注册时间</th><th>投递状态</th><th>管理员</th><th>操作</th></tr></thead><tbody>';
+filtered.forEach(u=>{
+const r=resumesOf.find(ru=>ru.userId===u.id);
+html+='<tr><td>'+(u.name||'-')+'</td><td>'+(u.studentId||'-')+'</td><td>'+(u.class||'-')+'</td><td>'+(u.phone||'-')+'</td><td>'+new Date(u.createdAt).toLocaleDateString('zh-CN')+'</td><td>'+(r?r.status==='pending'?'<span class="status-pending">⏳ 待审核</span>':r.status==='admitted'?'<span class="status-admitted">✅ 已录取</span>':'<span class="status-rejected">❌ 未录取</span>':'<span style="font-size:12px;color:var(--text-tertiary);">未投递</span>')+'</td><td>'+(u.isAdmin?'<span class="chip chip-admitted" style="font-size:10px;height:20px;">✅ 管理员</span>':'<span style="font-size:12px;color:var(--text-tertiary);">普通用户</span>')+'</td><td style="display:flex;gap:4px;flex-wrap:wrap;">'+(u.isAdmin?'<button class="btn btn-danger btn-sm" data-act="demote" data-uid="'+u.id+'" style="font-size:11px;padding:0 6px;height:24px;">⬇️ 取消管理员</button>':(adminCount>=maxAdmins?'<span style="font-size:11px;color:var(--text-tertiary);">已满额</span>':'<button class="btn btn-success btn-sm" data-act="promote" data-uid="'+u.id+'" style="font-size:11px;padding:0 6px;height:24px;">⬆️ 设为管理员</button>'))+'<button class="btn btn-danger btn-sm" data-act="deleteUser" data-uid="'+u.id+'" style="font-size:11px;padding:0 6px;height:24px;">🗑️ 删除用户</button></td></tr>';
+});
+html+='</tbody></table></div>';
+}
+html+='</div>';
+tc.innerHTML=html;
+const si=document.getElementById('userSearchInput');
+if(si)si.addEventListener('input',function(){renderUserManagement(d);if(this.value&&document.getElementById('userSearchInput')){const el=document.getElementById('userSearchInput');el.focus();el.setSelectionRange(el.value.length,el.value.length);}});
+tc.querySelectorAll('[data-act="promote"]').forEach(btn=>{btn.addEventListener('click',async function(){btn.disabled=true;try{await api.post('/api/users/'+this.dataset.uid+'/promote',{});refreshUsers();}catch(e){alert(e.message);btn.disabled=false;}});});
+tc.querySelectorAll('[data-act="demote"]').forEach(btn=>{btn.addEventListener('click',async function(){if(!confirm('确定要取消该用户的管理员权限吗？该用户仍可使用普通账号登录。'))return;btn.disabled=true;try{await api.post('/api/users/'+this.dataset.uid+'/demote',{});refreshUsers();}catch(e){alert(e.message);btn.disabled=false;}});});
+tc.querySelectorAll('[data-act="deleteUser"]').forEach(btn=>{btn.addEventListener('click',async function(){const uid=this.dataset.uid;const u=users.find(x=>x.id===uid);if(!u)return;if(!confirm('⚠️ 确定要永久删除用户【'+u.name+'('+u.studentId+')】吗？删除后该用户的所有信息（包括简历、投递记录等）将被彻底清除，该用户需要重新注册才能登录。此操作不可恢复！'))return;btn.disabled=true;try{await api.del('/api/users/'+uid);refreshUsers();}catch(e){alert(e.message);btn.disabled=false;}});});
+}
+async function refreshUsers(){
+try{const d=await api.get('/api/users');USERS=d.users;renderUserManagement(d);}catch(e){alert(e.message);}
+}
+
+function previewFile(file){
+const isImg=['png','jpg','jpeg','gif','webp','bmp'].some(ext=>file.type.includes(ext)||file.name.toLowerCase().endsWith(ext));
+const overlay=document.createElement('div');overlay.className='modal-overlay';overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+let bodyHtml='';
+if(isImg){bodyHtml=`<img src="${file.data}" style="max-width:100%;max-height:60vh;display:block;margin:0 auto;border-radius:8px;" alt="预览">`;}
+else if(file.type.includes('pdf')){bodyHtml=`<iframe src="${file.data}" style="width:100%;height:60vh;border:0;border-radius:8px;" title="PDF预览"></iframe>`;}
+else{bodyHtml=`<div style="text-align:center;padding:40px;"><div style="font-size:64px;margin-bottom:16px;">📄</div><p style="font-size:15px;font-weight:500;margin-bottom:8px;">${file.name}</p><p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">不支持在线预览，请下载查看</p></div>`;}
+overlay.innerHTML=`<div class="modal-card"><button class="modal-close" id="modalCloseBtn">✕</button><div class="modal-title">📎 附件预览 · ${file.name}</div>${bodyHtml}<div style="text-align:center;margin-top:12px;"><button class="btn btn-primary btn-sm" id="modalDownloadBtn2">⬇️ 下载到本地</button></div></div>`;
+document.body.appendChild(overlay);
+document.getElementById('modalCloseBtn').addEventListener('click',()=>overlay.remove());
+document.getElementById('modalDownloadBtn2').addEventListener('click',()=>downloadFile(file));
+}
+function downloadFile(file){const a=document.createElement('a');a.href=file.data;a.download=file.name;document.body.appendChild(a);a.click();a.remove();}
+
+function registerDeptPicker(){var toggle=document.getElementById('deptToggle');var panel=document.getElementById('deptPanel');var label=document.getElementById('deptToggleLabel');if(!toggle||!panel)return;var order=[];var rows=Array.prototype.slice.call(panel.querySelectorAll('.dept-opt'));function refresh(){rows.forEach(function(row){var name=row.getAttribute('data-name');var pos=order.indexOf(name);var num=row.querySelector('.dept-num');if(pos>=0){row.classList.add('sel');if(num)num.textContent=String(pos+1);}else{row.classList.remove('sel');if(num)num.textContent='';}});if(label)label.textContent=order.length?('已选择 '+order.length+' 个部门'):'请选择加入部门';}rows.forEach(function(row){row.addEventListener('click',function(){var name=this.getAttribute('data-name');var pos=order.indexOf(name);if(pos>=0){order.splice(pos,1);}else{if(order.length>=3){alert('最多只能选择3个部门');return;}order.push(name);}refresh();});});toggle.addEventListener('click',function(){panel.classList.toggle('open');});refresh();window._getDeptOrder=function(){return order.slice();};}
+
+/* ---------------- 初始化 ---------------- */
+window._navigate=navigate;
+document.querySelectorAll('#mainNav button').forEach(b=>{b.addEventListener('click',function(){navigate(this.dataset.page);});});
+logoutBtn.addEventListener('click',async function(){
+try{await api.post('/api/logout',{});}catch(e){}
+api.setToken('');SESSION={user:null,isAdmin:false,isTerminal:false};
+renderNav();navigate('home');
+});
+async function boot(){
+if(api.token){
+try{const me=await api.get('/api/me');if(me&&me.user){setSession(me);}else{api.setToken('');}}catch(e){api.setToken('');}
+}
+renderNav();
+let page=localStorage.getItem('recruit_page')||'home';
+if(!SESSION.isAdmin&&page==='admin')page='home';
+if(!SESSION.user&&(page==='resume'||page==='userCenter'))page='home';
+navigate(page);
+}
+boot();
+})();
+</script>
+</body>
+</html>

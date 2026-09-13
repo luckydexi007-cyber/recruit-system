@@ -114,6 +114,8 @@ table tr:hover{background:var(--intensity-3)}
 .checkbox-item .cb-box{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--intensity-20);display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .15s;flex-shrink:0}
 .checkbox-item.selected .cb-box{background:var(--primary);border-color:var(--primary);color:#fff}
 .checkbox-item .cb-label{font-size:13px;font-weight:500}
+.checkbox-item .cb-order{min-width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;flex-shrink:0}
+.checkbox-item.selected .cb-order{display:flex}
 .upload-zone{position:relative;border:1.5px dashed var(--intensity-20);border-radius:var(--radius-md);padding:20px;text-align:center;transition:all .2s;background:var(--intensity-3);cursor:pointer}
 .upload-zone:hover{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 5%,transparent)}
 .upload-zone.has-file{border-style:solid;border-color:var(--success);background:color-mix(in srgb,var(--success) 6%,transparent)}
@@ -257,20 +259,20 @@ userDisplay.textContent=SESSION.isTerminal?'终端管理员':(SESSION.isAdmin?('
 logoutBtn.style.display='';
 }else{userDisplay.style.display='none';logoutBtn.style.display='none';}
 }
-function navigate(page){
+function navigate(page,deptIdx){
 if(page==='admin'&&!SESSION.isAdmin)page='home';
 if((page==='resume'||page==='userCenter')&&!SESSION.user)page='login';
 CURRENT_PAGE=page;
 localStorage.setItem('recruit_page',page);
 document.querySelectorAll('#mainNav button,#adminNavBtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
-Promise.resolve(renderPage(page)).catch(e=>{console.error(e);});
+Promise.resolve(renderPage(page,deptIdx)).catch(e=>{console.error(e);});
 startPoll();
 window.scrollTo({top:0,behavior:'smooth'});
 }
-function renderPage(page){
+function renderPage(page,deptIdx){
 switch(page){
 case'home':renderHome();break;
-case'depts':renderDepts();break;
+case'depts':renderDepts(deptIdx);break;
 case'register':renderRegister();break;
 case'login':renderLogin();break;
 case'resume':return renderResume();
@@ -306,11 +308,11 @@ container.innerHTML=`
 <p>六大部门，六个舞台。无论你想锻炼自己、服务同学还是结交挚友，这里都有属于你的位置。用热情点亮青春，用行动书写故事！</p>
 </div>
 <div class="card"><h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">🏛️ 六大部门一览</h3>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">${DEPT_DATA.map(d=>`<div style="padding:14px;background:var(--intensity-4);border-radius:var(--radius-md);text-align:center;cursor:pointer;" onclick="window._navigate('depts')"><div style="font-size:28px;margin-bottom:6px;">${d.icon}</div><div style="font-size:13px;font-weight:500;">${d.name}</div></div>`).join('')}</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">${DEPT_DATA.map((d,i)=>`<div style="padding:14px;background:var(--intensity-4);border-radius:var(--radius-md);text-align:center;cursor:pointer;" onclick="window._navigate('depts',${i})"><div style="font-size:28px;margin-bottom:6px;">${d.icon}</div><div style="font-size:13px;font-weight:500;">${d.name}</div></div>`).join('')}</div>
 <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">${!SESSION.user?`<button class="btn btn-primary" onclick="window._navigate('register')">📝 立即注册报名</button><button class="btn btn-secondary" onclick="window._navigate('depts')">🔍 了解部门详情</button><button class="btn btn-secondary" onclick="window._navigate('login')">🔑 已有账号登录</button>`:`<button class="btn btn-primary" onclick="window._navigate('resume')">📝 投递简历</button><button class="btn btn-secondary" onclick="window._navigate('depts')">🔍 了解部门详情</button>`}</div></div>`;
 }
-function renderDepts(){
-container.innerHTML=`<div class="section-title">🏛️ 部门介绍</div><div class="dept-tabs" id="deptTabs">${DEPT_DATA.map((d,i)=>`<button class="${i===0?'active':''}" data-didx="${i}">${d.icon} ${d.name}</button>`).join('')}</div><div id="deptDetail">${buildDeptDetail(0)}</div>`;
+function renderDepts(idx){idx=parseInt(idx)||0;if(idx<0||idx>=DEPT_DATA.length)idx=0;
+container.innerHTML=`<div class="section-title">🏛️ 部门介绍</div><div class="dept-tabs" id="deptTabs">${DEPT_DATA.map((d,i)=>`<button class="${i===idx?'active':''}" data-didx="${i}">${d.icon} ${d.name}</button>`).join('')}</div><div id="deptDetail">${buildDeptDetail(idx)}</div>`;
 document.querySelectorAll('#deptTabs button').forEach(b=>{b.addEventListener('click',function(){document.querySelectorAll('#deptTabs button').forEach(bb=>bb.classList.remove('active'));this.classList.add('active');document.getElementById('deptDetail').innerHTML=buildDeptDetail(parseInt(this.dataset.didx));});});
 }
 function buildDeptDetail(idx){const d=DEPT_DATA[idx];const bgs=['#E8F4FD','#FFF3E0','#FCE4EC','#E8F5E9','#F3E5F5','#FFF8E1'][idx]||'var(--intensity-4)';return `<div class="card"><div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:.5px solid var(--intensity-8);"><div style="width:52px;height:52px;border-radius:12px;background:${bgs};display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">${d.icon}</div><div><h3 style="font-size:20px;font-weight:600;color:${d.color};">${d.name}</h3><p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">车辆与交通学院团总支·学生会</p></div></div><div style="display:grid;gap:16px;">${d.items.map(item=>`<div style="background:var(--intensity-4);border-radius:var(--radius-md);padding:16px;border-left:3px solid ${d.color};"><div style="font-size:14px;font-weight:600;margin-bottom:6px;color:${d.color};">${item.title}</div><div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${item.desc}</div></div>`).join('')}</div>${!SESSION.user?`<div style="margin-top:20px;"><button class="btn btn-primary" onclick="window._navigate('register')">📝 立即报名加入</button></div>`:`<div style="margin-top:20px;"><button class="btn btn-primary" onclick="window._navigate('resume')">📝 投递简历</button></div>`}</div>`;}
@@ -398,10 +400,9 @@ registerDeptCheckboxes();
 document.getElementById('submitResume').addEventListener('click',async function(){
 const name=document.getElementById('resName').value.trim(),cls=document.getElementById('resClass').value.trim(),phone=document.getElementById('resPhone').value.trim(),email=document.getElementById('resEmail').value.trim(),intro=document.getElementById('resIntro').value.trim(),skills=document.getElementById('resSkills').value.trim(),awards=document.getElementById('resAwards').value.trim(),prevPos=document.getElementById('resPrevPos').value.trim(),al=document.getElementById('resumeAlert'),btn=this;
 if(!name||!cls||!phone){al.className='alert';al.textContent='请填写必填字段';return}
-const checked=document.querySelectorAll('.dept-check:checked');
-if(checked.length===0){al.className='alert';al.textContent='请至少选择一个意向部门';return}
-if(checked.length>3){al.className='alert';al.textContent='最多可选择3个意向部门';return}
-const depts=Array.from(checked).map(c=>c.value);
+const depts=(typeof window._getDeptOrder==='function'?window._getDeptOrder():[]);
+if(depts.length===0){al.className='alert';al.textContent='请至少选择一个意向部门';return}
+if(depts.length>3){al.className='alert';al.textContent='最多可选择3个意向部门';return}
 btn.disabled=true;btn.textContent='提交中...';
 try{
 await api.post('/api/resumes',{name:name,className:cls,phone:phone,email:email,departments:depts,intro:intro,skills:skills,awards:awards,prevPosition:prevPos,file:fileData});
@@ -423,8 +424,8 @@ return `<div class="card"><h3 style="font-size:18px;font-weight:600;margin-botto
 <div class="form-group"><label>姓名</label><input id="resName" value="${u.name||''}" placeholder="请输入姓名"></div>
 <div class="form-row"><div class="form-group"><label>学号</label><input id="resStudentId" value="${u.studentId||''}" readonly style="background:var(--intensity-6)"></div><div class="form-group"><label>班级</label><input id="resClass" value="${u.class||''}" placeholder="如：车辆工程2301"></div></div>
 <div class="form-row"><div class="form-group"><label>手机号</label><input id="resPhone" value="${u.phone||''}" placeholder="请输入手机号"></div><div class="form-group"><label>邮箱</label><input id="resEmail" value="${u.email||''}" placeholder="请输入邮箱"></div></div>
-<div class="form-group"><label>意向部门（可多选，最多3个）</label>
-<div class="checkbox-grid">${DEPT_DATA.map(d=>`<label class="checkbox-item"><div class="cb-box">✓</div><div><div class="cb-label">${d.icon} ${d.name}</div></div><input type="checkbox" class="dept-check hidden" value="${d.name}"></label>`).join('')}</div>
+<div class="form-group"><label>意向部门（可多选，最多3个，选择顺序即优先级 1→3）</label>
+<div class="checkbox-grid">${DEPT_DATA.map(d=>`<label class="checkbox-item"><div class="cb-box">✓</div><div style="flex:1"><div class="cb-label">${d.icon} ${d.name}</div><div class="cb-order"></div><input type="checkbox" class="dept-check hidden" value="${d.name}"></label>`).join('')}</div>
 <div style="font-size:12px;color:var(--text-tertiary);margin-top:8px;" id="deptCountHint">已选择 0 / 3 个部门</div></div>
 <div class="form-group"><label>个人简介</label><textarea id="resIntro" placeholder="请简要介绍自己，包括兴趣爱好、相关经历、加入理由等..." style="height:100px"></textarea></div>
 <div class="form-group"><label>特长与技能</label><textarea id="resSkills" placeholder="如：摄影、视频剪辑、文案写作、PS设计、公众号运营、活动策划等" style="height:70px"></textarea></div>
@@ -454,7 +455,7 @@ ${r.status==='admitted'?`
 <div style="padding:16px;background:var(--intensity-4);border-radius:var(--radius-md);">
 <p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>姓名：</strong>${r.name}</p>
 <p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>班级：</strong>${r.className}</p>
-<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>意向部门：</strong><span class="chip-group">${r.departments.map(d=>`<span class="chip${r.admittedDepartment===d?' chip-admitted':''}">${d}${r.admittedDepartment===d?' ✅':''}</span>`).join('')}</span></p>
+<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>意向部门：</strong><span class="chip-group">${r.departments.map((d,i)=>`<span class="chip${r.admittedDepartment===d?' chip-admitted':''}">${i+1}.${d}${r.admittedDepartment===d?' ✅':''}</span>`).join('')}</span></p>
 ${r.awards?`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>获奖情况：</strong>${r.awards}</p>`:''}
 ${r.prevPosition?`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>曾任职务：</strong>${r.prevPosition}</p>`:''}
 ${hasFile?`<p style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;"><strong>附件：</strong><span style="color:var(--success);">✅ ${r.file.name}</span>（${(r.file.size/1024).toFixed(1)}KB）</p>`:''}
@@ -477,7 +478,7 @@ const deptName=resume?resume.admittedDepartment:'';
 const hasFile=resume&&resume.file&&resume.file.data;
 const isReallocate=resume&&resume.admittedType==='reallocate';
 container.innerHTML=`<div style="max-width:640px;margin:0 auto;"><div class="card" style="margin-bottom:16px;"><div style="display:flex;align-items:center;gap:16px;"><div style="width:56px;height:56px;border-radius:50%;background:color-mix(in srgb,var(--primary) 15%,transparent);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--primary);font-weight:600;">${(u.name||'?')[0]}</div><div><h3 style="font-size:17px;font-weight:600;">${u.name||'同学'}</h3><p style="font-size:13px;color:var(--text-secondary);">${u.class||''} · ${u.studentId||''}</p></div></div></div>
-${resume?`<div class="card"><h4 style="font-size:15px;font-weight:600;margin-bottom:12px;">📋 我的申请</h4><div style="padding:12px 0;border-bottom:.5px solid var(--intensity-6)"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><p style="font-size:14px;font-weight:500;">意向部门</p><p style="font-size:12px;color:var(--text-secondary);margin-top:4px;">提交时间：${new Date(resume.submittedAt).toLocaleDateString('zh-CN')}</p></div>${resume.status==='pending'?'<span class="status-pending">⏳ 审核中</span>':resume.status==='admitted'?`<span class="status-admitted">✅ 已录取 · ${deptName}</span>`:'<span class="status-rejected">❌ 未录取</span>'}</div><div style="margin-top:8px;" class="chip-group">${(resume.departments||[]).map(d=>`<span class="chip${resume.admittedDepartment===d?' chip-admitted':''}">${d}${resume.admittedDepartment===d?' ✅':''}</span>`).join('')}</div>${hasFile?`<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);"><strong>附件：</strong><span style="color:var(--success);">✅ ${resume.file.name}</span></div>`:''}</div>
+${resume?`<div class="card"><h4 style="font-size:15px;font-weight:600;margin-bottom:12px;">📋 我的申请</h4><div style="padding:12px 0;border-bottom:.5px solid var(--intensity-6)"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><p style="font-size:14px;font-weight:500;">意向部门</p><p style="font-size:12px;color:var(--text-secondary);margin-top:4px;">提交时间：${new Date(resume.submittedAt).toLocaleDateString('zh-CN')}</p></div>${resume.status==='pending'?'<span class="status-pending">⏳ 审核中</span>':resume.status==='admitted'?`<span class="status-admitted">✅ 已录取 · ${deptName}</span>`:'<span class="status-rejected">❌ 未录取</span>'}</div><div style="margin-top:8px;" class="chip-group">${(resume.departments||[]).map((d,i)=>`<span class="chip${resume.admittedDepartment===d?' chip-admitted':''}">${i+1}.${d}${resume.admittedDepartment===d?' ✅':''}</span>`).join('')}</div>${hasFile?`<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);"><strong>附件：</strong><span style="color:var(--success);">✅ ${resume.file.name}</span></div>`:''}</div>
 ${resume.status==='admitted'?`<div class="congrats-box" style="margin-top:12px;${isReallocate?'background:linear-gradient(135deg,color-mix(in srgb,#58B2DC 10%,transparent),color-mix(in srgb,#58B2DC 5%,transparent));border-color:color-mix(in srgb,#58B2DC 30%,transparent);':''}"><div class="big-icon">🎉</div><h3 style="${isReallocate?'color:#58B2DC;':''}">恭喜你已被 ${isReallocate?'调剂至':'被'} ${deptName} 录取</h3><p style="color:var(--text-secondary);margin-top:6px;font-size:13px;">欢迎加入车辆与交通学院团总支·学生会${deptName}大家庭！</p></div>`:''}
 ${resume.status==='pending'?`<div style="margin-top:12px;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);text-align:center;">⏳ 你的简历正在审核中，请耐心等待～</div>`:''}
 ${resume.status==='rejected'?`<div style="margin-top:12px;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md);font-size:13px;color:var(--text-secondary);text-align:center;">本次招新未被录取，你可以<button class="btn btn-primary btn-sm" id="reapplyBtn2" style="margin-left:8px;">重新投递</button></div>`:''}
@@ -507,6 +508,7 @@ const admitted=resumes.filter(r=>r.status==='admitted');
 const rejected=resumes.filter(r=>r.status==='rejected');
 const userTabHtml=SESSION.isTerminal?`<button data-atab="users">用户管理</button>`:'';
 container.innerHTML=`<div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;"><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--primary);">${resumes.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">总投递数</div></div><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--warning);">${pending.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">待审核</div></div><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--success);">${admitted.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">已录取</div></div><div class="card-sm" style="text-align:center;padding:20px;"><div style="font-size:28px;font-weight:600;color:var(--destructive);">${rejected.length}</div><div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">未录取</div></div></div>
+<div class="card" style="margin-bottom:20px;padding:16px"><div style="font-size:14px;font-weight:600;margin-bottom:12px">🏛️ 六部门录取人数统计</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">${ALL_DEPT_NAMES.map(dn=>{const c=admitted.filter(r=>r.admittedDepartment===dn).length;const t=resumes.filter(r=>(r.departments||[]).includes(dn)).length;return `<div style="text-align:center;padding:12px;background:var(--intensity-4);border-radius:var(--radius-md)"><div style="font-size:22px;font-weight:600;color:var(--primary)">${c}</div><div style="font-size:12px;font-weight:500;margin-top:2px">${dn}</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:2px">意向 ${t} 人</div></div>`;}).join('')}</div></div>
 <div class="tab-bar"><button class="${CURRENT_TAB==='pending'?'active':''}" data-atab="pending">待审核 (${pending.length})</button><button class="${CURRENT_TAB==='all'?'active':''}" data-atab="all">全部 (${resumes.length})</button><button class="${CURRENT_TAB==='admitted'?'active':''}" data-atab="admitted">已录取 (${admitted.length})</button><button class="${CURRENT_TAB==='rejected'?'active':''}" data-atab="rejected">未录取 (${rejected.length})</button>${userTabHtml}</div>
 <div id="adminTableContainer"></div></div>`;
 document.querySelectorAll('.tab-bar button').forEach(b=>{b.addEventListener('click',function(){document.querySelectorAll('.tab-bar button').forEach(bb=>bb.classList.remove('active'));this.classList.add('active');CURRENT_TAB=this.dataset.atab;renderAdminTable(CURRENT_TAB);});});
@@ -527,7 +529,7 @@ else list=[...RESUMES];
 if(list.length===0){tc.innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--text-secondary);font-size:14px;">暂无数据</div>';return}
 let html=`<div class="card" style="padding:0;overflow:hidden;"><div class="table-wrap"><table><thead><tr><th>姓名</th><th>学号</th><th>班级</th><th>意向部门</th><th>附件</th><th>时间</th><th>状态</th><th>操作</th></tr></thead><tbody>`;
 list.forEach(r=>{
-const deptDisplay=r.departments?r.departments.map(d=>{const ia=r.admittedDepartment===d;const ir=r.admittedType==='reallocate'&&ia;return `<span class="chip${ia?ir?' chip-reallocate':' chip-admitted':''}" style="font-size:10px;height:20px;padding:0 6px;">${d}${ia?' ✅':''}</span>`;}).join(' '):'-';
+const deptDisplay=r.departments?r.departments.map((d,i)=>{const ia=r.admittedDepartment===d;const ir=r.admittedType==='reallocate'&&ia;return `<span class="chip${ia?ir?' chip-reallocate':' chip-admitted':''}" style="font-size:10px;height:20px;padding:0 6px;">${i+1}.${d}${ia?' ✅':''}</span>`;}).join(' '):'-';
 const hasFile=r.file&&r.file.data;
 html+=`<tr>
 <td>${r.name}</td>
@@ -562,7 +564,7 @@ const depts=r.departments||[];
 let html=`<button class="btn btn-secondary btn-sm" data-act="detail" data-rid="${r.id}" style="font-size:11px;padding:0 8px;height:26px;">详情</button>
 <div style="display:flex;flex-direction:column;gap:4px;width:100%;border-bottom:.5px solid var(--intensity-6);padding-bottom:4px;margin-bottom:4px;">
 <div style="font-size:10px;font-weight:500;color:var(--success);">录取至意向部门</div>`;
-depts.forEach(d=>{html+=`<button class="btn btn-success btn-sm" data-act="admit" data-rid="${r.id}" data-dept="${d}" style="font-size:11px;padding:0 8px;height:24px;">录取至 ${d}</button>`;});
+depts.forEach((d,i)=>{html+=`<button class="btn btn-success btn-sm" data-act="admit" data-rid="${r.id}" data-dept="${d}" style="font-size:11px;padding:0 8px;height:24px;">录取至 ${i+1}.${d}</button>`;});
 html+=`</div>`;
 const otherDepts=ALL_DEPT_NAMES.filter(d=>!depts.includes(d));
 html+=`<div style="display:flex;flex-direction:column;gap:4px;width:100%;border-bottom:.5px solid var(--intensity-6);padding-bottom:4px;margin-bottom:4px;">
@@ -621,7 +623,7 @@ document.getElementById('modalDownloadBtn2').addEventListener('click',()=>downlo
 }
 function downloadFile(file){const a=document.createElement('a');a.href=file.data;a.download=file.name;document.body.appendChild(a);a.click();a.remove();}
 
-function registerDeptCheckboxes(){const items=document.querySelectorAll('.checkbox-item');const hint=document.getElementById('deptCountHint');if(!items.length)return;items.forEach(item=>{const cb=item.querySelector('.dept-check');item.addEventListener('click',function(e){e.preventDefault();const checked=document.querySelectorAll('.dept-check:checked').length;if(!cb.checked&&checked>=3){alert('最多只能选择3个部门');return}cb.checked=!cb.checked;this.classList.toggle('selected',cb.checked);const cnt=document.querySelectorAll('.dept-check:checked').length;if(hint)hint.textContent='已选择 '+cnt+' / 3 个部门';});});}
+function registerDeptCheckboxes(){const items=document.querySelectorAll('.checkbox-item');const hint=document.getElementById('deptCountHint');if(!items.length)return;let order=[];function refresh(){const cnt=order.length;items.forEach(item=>{const cb=item.querySelector('.dept-check');const badge=item.querySelector('.cb-order');const pos=order.indexOf(cb.value);const sel=pos>=0;cb.checked=sel;item.classList.toggle('selected',sel);if(badge)badge.textContent=sel?String(pos+1):'';});if(hint)hint.textContent=cnt?('已选择 '+cnt+' / 3 个部门 · 数字 1→'+cnt+' 表示优先级'):'已选择 0 / 3 个部门';}items.forEach(item=>{const cb=item.querySelector('.dept-check');item.addEventListener('click',function(e){e.preventDefault();const val=cb.value;const pos=order.indexOf(val);if(pos>=0){order.splice(pos,1);}else{if(order.length>=3){alert('最多只能选择3个部门');return;}order.push(val);}refresh();});});window._getDeptOrder=function(){return order.slice();};}
 
 /* ---------------- 初始化 ---------------- */
 window._navigate=navigate;

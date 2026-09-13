@@ -1,8 +1,8 @@
-/**
+/*
  * 车辆与交通学院·团总支学生会 招新系统 —— 云端后端服务
- * 零依赖：仅使用 Node.js 内置模块（http / fs / path / crypto / url）
- * 数据存储：同目录下 data.json（可整体备份/迁移）
- * 启动：node server.js   （默认端口 3000，可用环境变量 PORT 修改）
+ * 数据存储：优先使用 Postgres（环境变量 DATABASE_URL），部署迭代后数据不丢失；
+ *          未配置 DATABASE_URL 时回退到本地 data.json（仅本地开发用）。
+ * 启动：node server.js
  */
 const http = require('http');
 const fs = require('fs');
@@ -12,9 +12,7 @@ const url = require('url');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
-// 数据目录：优先使用 DATA_DIR 环境变量（用于挂载持久磁盘，如 Render 的 /var/data），默认使用当前目录
-const DATA_DIR = process.env.DATA_DIR || ROOT;
-const DATA_FILE = path.join(DATA_DIR, 'data.json');
+const DATA_FILE = path.join(process.env.DATA_DIR || ROOT, 'data.json');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 
 const MAX_ADMINS = 100;
@@ -29,7 +27,40 @@ const ALL_DEPTS = ['办公室', '组织部', '宣传部', '学习部', '文体�
 /* ------------------------------------------------------------------ */
 let db = { users: [], resumes: [], sessions: {} };
 
-function loadDB() {
+let pool = null;
+let pgReady = false;
+try {
+  if (process.env.DATABASE_URL) {
+    const { Pool } = require('pg');
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false }
+    });
+  }
+} catch (e) {
+  console.error('[warn] pg 未安装，回退本地文件存储:', e.message);
+  pool = null;
+}
+
+async function loadDB() {
+  if (pool) {
+    try {
+      await pool.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, data JSONB NOT NULL, updated_at TIMESTAMPTZ DEFAULT now())');
+      const r = await pool.query('SELECT data FROM app_state WHERE id = 1');
+      if (r.rows.length && r.rows[0].data) {
+        const d = r.rows[0].data;
+        db.users = Array.isArray(d.users) ? d.users : [];
+        db.resumes = Array.isArray(d.resumes) ? d.resumes : [];
+        db.sessions = d.sessions && typeof d.sessions === 'object' ? d.sessions : {};
+      }
+      pgReady = true;
+      console.log('[db] 已连接 Postgres，数据将持久保存（部署迭代不丢失）');
+      return;
+    } catch (e) {
+      console.error('[warn] Postgres 初始化失败，回退本地文件:', e.message);
+      pool = null;
+    }
+  }
   if (fs.existsSync(DATA_FILE)) {
     try {
       const raw = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
@@ -40,10 +71,22 @@ function loadDB() {
       console.error('[warn] data.json 解析失败，使用空数据库:', e.message);
     }
   }
+  console.log('[db] 使用本地文件存储:', DATA_FILE, '（未配置 DATABASE_URL，重新部署会重置）');
 }
 
+let persistTimer = null;
 function persist() {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db));
+  if (pool && pgReady) {
+    clearTimeout(persistTimer);
+    persistTimer = setTimeout(function () {
+      pool.query(
+        'INSERT INTO app_state (id, data, updated_at) VALUES (1, $1, now()) ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = now()',
+        [JSON.stringify(db)]
+      ).catch(function (e) { console.error('[persist]', e.message); });
+    }, 150);
+    return;
+  }
+  try { fs.writeFileSync(DATA_FILE, JSON.stringify(db)); } catch (e) { console.error('[persist]', e.message); }
 }
 
 /* ------------------------------------------------------------------ */
@@ -70,15 +113,15 @@ function send(res, code, obj) {
 }
 
 function readBody(req) {
-  return new Promise((resolve, reject) => {
+  return new Promise(function (resolve, reject) {
     const chunks = [];
     let size = 0;
-    req.on('data', (c) => {
+    req.on('data', function (c) {
       size += c.length;
       if (size > MAX_BODY) { reject(new Error('请求体过大')); req.destroy(); return; }
       chunks.push(c);
     });
-    req.on('end', () => {
+    req.on('end', function () {
       if (!chunks.length) return resolve({});
       try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
       catch (e) { resolve({}); }
@@ -94,8 +137,8 @@ function auth(req) {
   return Object.assign({ token: token }, db.sessions[token]);
 }
 
-function findUserById(id) { return db.users.find((u) => u.id === id); }
-function findUserByStudentId(sid) { return db.users.find((u) => u.studentId === sid); }
+function findUserById(id) { return db.users.find(function (u) { return u.id === id; }); }
+function findUserByStudentId(sid) { return db.users.find(function (u) { return u.studentId === sid; }); }
 
 /* ------------------------------------------------------------------ */
 /* 静态资源                                                            */
@@ -107,31 +150,32 @@ const MIME = {
   '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2'
 };
 
+function sendFile(res, filePath, data) {
+  const ext = path.extname(filePath).toLowerCase();
+  res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+  res.end(data);
+}
+function notFound(res) {
+  res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('404 Not Found');
+}
+
 function serveStatic(pathname, res) {
-  let rel = decodeURIComponent(pathname.split('?')[0].split('#')[0]);
+  let rel = decodeURIComponent(pathname.split('?')[0]);
   if (rel === '/' || rel === '') rel = '/index.html';
-  const norm = path.normalize(rel);
-  const segs = norm.split(path.sep).filter(function (x) { return x && x !== '..'; });
-  const safe = segs.join(path.sep);
-  const candidates = [
-    path.join(PUBLIC_DIR, safe),
-    path.join(ROOT, safe),
-    path.join(PUBLIC_DIR, safe + '.html')
-  ];
-  tryNext(0);
-  function tryNext(i) {
-    if (i >= candidates.length) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('404 Not Found');
-      return;
-    }
-    fs.readFile(candidates[i], (err, data) => {
-      if (err) { tryNext(i + 1); return; }
-      const ext = path.extname(candidates[i]).toLowerCase();
-      res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
-      res.end(data);
+  const safe = path.normalize(rel).replace(/^(\.\.[\/\\])+/, '');
+  const filePath = path.join(PUBLIC_DIR, safe);
+  if (!filePath.startsWith(PUBLIC_DIR)) { res.writeHead(403); res.end('Forbidden'); return; }
+  fs.readFile(filePath, function (err, data) {
+    if (!err) return sendFile(res, filePath, data);
+    // 兼容：网页直接放在仓库根目录（没有 public 文件夹）的情况
+    const alt = path.join(ROOT, safe);
+    if (!alt.startsWith(ROOT) || alt.startsWith(PUBLIC_DIR)) { notFound(res); return; }
+    fs.readFile(alt, function (err2, data2) {
+      if (err2) { notFound(res); return; }
+      sendFile(res, alt, data2);
     });
-  }
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -140,10 +184,8 @@ function serveStatic(pathname, res) {
 async function handleApi(method, pathname, body, req, res) {
   const session = auth(req);
 
-  // ---- 健康检查 ----
-  if (method === 'GET' && pathname === '/api/health') { send(res, 200, { ok: true, ts: Date.now() }); return true; }
+  if (method === 'GET' && pathname === '/api/health') { send(res, 200, { ok: true, ts: Date.now(), storage: (pool && pgReady) ? 'postgres' : 'file' }); return true; }
 
-  // ---- 当前会话 ----
   if (method === 'GET' && pathname === '/api/me') {
     if (!session) { send(res, 200, { user: null, isAdmin: false, isTerminal: false }); return true; }
     if (session.isTerminal) {
@@ -230,34 +272,43 @@ async function handleApi(method, pathname, body, req, res) {
     return true;
   }
 
+  // ---- 注销账户（用户本人永久删除自己的账号与全部数据） ----
+  if (method === 'DELETE' && pathname === '/api/account') {
+    if (!session || !session.userId) { send(res, 403, { error: '请先登录用户账号' }); return true; }
+    const id = session.userId;
+    db.users = db.users.filter(function (u) { return u.id !== id; });
+    db.resumes = db.resumes.filter(function (r) { return r.userId !== id; });
+    Object.keys(db.sessions).forEach(function (t) { if (db.sessions[t].userId === id) delete db.sessions[t]; });
+    persist();
+    send(res, 200, { ok: true });
+    return true;
+  }
+
   /* ---------------- 简历 ---------------- */
-  // 管理员：全部简历
   if (method === 'GET' && pathname === '/api/resumes') {
     if (!session || !session.isAdmin) { send(res, 403, { error: '无权限' }); return true; }
     send(res, 200, { resumes: db.resumes });
     return true;
   }
 
-  // 用户：我的简历
   if (method === 'GET' && pathname === '/api/resumes/mine') {
     if (!session || session.isTerminal || !session.userId) { send(res, 200, { resume: null }); return true; }
-    const r = db.resumes.find((x) => x.userId === session.userId);
+    const r = db.resumes.find(function (x) { return x.userId === session.userId; });
     send(res, 200, { resume: r || null });
     return true;
   }
 
-  // 用户：投递简历
   if (method === 'POST' && pathname === '/api/resumes') {
     if (!session || session.isTerminal || !session.userId) { send(res, 403, { error: '请先登录用户账号' }); return true; }
     const u = findUserById(session.userId);
     if (!u) { send(res, 403, { error: '用户不存在' }); return true; }
-    if (db.resumes.find((r) => r.userId === u.id)) { send(res, 409, { error: '你已经投递过简历，不能重复投递' }); return true; }
+    if (db.resumes.find(function (r) { return r.userId === u.id; })) { send(res, 409, { error: '你已经投递过简历，不能重复投递' }); return true; }
 
     const name = String(body.name || '').trim();
     const cls = String(body.className || '').trim();
     const phone = String(body.phone || '').trim();
     const email = String(body.email || '').trim();
-    const departments = Array.isArray(body.departments) ? body.departments.filter((d) => ALL_DEPTS.includes(d)) : [];
+    const departments = Array.isArray(body.departments) ? body.departments.filter(function (d) { return ALL_DEPTS.includes(d); }) : [];
     if (!name || !cls || !phone) { send(res, 400, { error: '请填写必填字段' }); return true; }
     if (departments.length === 0) { send(res, 400, { error: '请至少选择一个意向部门' }); return true; }
     if (departments.length > 3) { send(res, 400, { error: '最多可选择3个意向部门' }); return true; }
@@ -281,12 +332,11 @@ async function handleApi(method, pathname, body, req, res) {
     return true;
   }
 
-  // 删除简历（管理员 或 本人重新投递）
   let m = pathname.match(/^\/api\/resumes\/([^/]+)$/);
   if (method === 'DELETE' && m) {
     if (!session) { send(res, 403, { error: '无权限' }); return true; }
     const id = m[1];
-    const idx = db.resumes.findIndex((r) => r.id === id);
+    const idx = db.resumes.findIndex(function (r) { return r.id === id; });
     if (idx < 0) { send(res, 404, { error: '简历不存在' }); return true; }
     const owner = session.userId && db.resumes[idx].userId === session.userId;
     if (!session.isAdmin && !owner) { send(res, 403, { error: '无权限' }); return true; }
@@ -295,11 +345,10 @@ async function handleApi(method, pathname, body, req, res) {
     return true;
   }
 
-  // 录取至意向部门
   m = pathname.match(/^\/api\/resumes\/([^/]+)\/admit$/);
   if (method === 'POST' && m) {
     if (!session || !session.isAdmin) { send(res, 403, { error: '无权限' }); return true; }
-    const r = db.resumes.find((x) => x.id === m[1]);
+    const r = db.resumes.find(function (x) { return x.id === m[1]; });
     if (!r) { send(res, 404, { error: '简历不存在' }); return true; }
     const dept = String(body.department || '');
     if (!r.departments.includes(dept)) { send(res, 400, { error: '只能录取至该生填报的意向部门' }); return true; }
@@ -309,11 +358,10 @@ async function handleApi(method, pathname, body, req, res) {
     return true;
   }
 
-  // 调剂至其他部门
   m = pathname.match(/^\/api\/resumes\/([^/]+)\/reallocate$/);
   if (method === 'POST' && m) {
     if (!session || !session.isAdmin) { send(res, 403, { error: '无权限' }); return true; }
-    const r = db.resumes.find((x) => x.id === m[1]);
+    const r = db.resumes.find(function (x) { return x.id === m[1]; });
     if (!r) { send(res, 404, { error: '简历不存在' }); return true; }
     const dept = String(body.department || '');
     if (!ALL_DEPTS.includes(dept)) { send(res, 400, { error: '请选择有效部门' }); return true; }
@@ -324,11 +372,10 @@ async function handleApi(method, pathname, body, req, res) {
     return true;
   }
 
-  // 不录取
   m = pathname.match(/^\/api\/resumes\/([^/]+)\/reject$/);
   if (method === 'POST' && m) {
     if (!session || !session.isAdmin) { send(res, 403, { error: '无权限' }); return true; }
-    const r = db.resumes.find((x) => x.id === m[1]);
+    const r = db.resumes.find(function (x) { return x.id === m[1]; });
     if (!r) { send(res, 404, { error: '简历不存在' }); return true; }
     r.status = 'rejected'; r.admittedDepartment = null; r.admittedType = null;
     persist();
@@ -348,7 +395,7 @@ async function handleApi(method, pathname, body, req, res) {
     if (!session || !session.isTerminal) { send(res, 403, { error: '无权限' }); return true; }
     const u = findUserById(m[1]);
     if (!u) { send(res, 404, { error: '用户不存在' }); return true; }
-    const count = db.users.filter((x) => x.isAdmin).length;
+    const count = db.users.filter(function (x) { return x.isAdmin; }).length;
     if (!u.isAdmin && count >= MAX_ADMINS) { send(res, 400, { error: '管理员数量已达上限(' + MAX_ADMINS + ')' }); return true; }
     u.isAdmin = true; persist();
     send(res, 200, { ok: true, user: publicUser(u) });
@@ -371,9 +418,9 @@ async function handleApi(method, pathname, body, req, res) {
     const id = m[1];
     const existed = findUserById(id);
     if (!existed) { send(res, 404, { error: '用户不存在' }); return true; }
-    db.users = db.users.filter((u) => u.id !== id);
-    db.resumes = db.resumes.filter((r) => r.userId !== id);
-    Object.keys(db.sessions).forEach((t) => { if (db.sessions[t].userId === id) delete db.sessions[t]; });
+    db.users = db.users.filter(function (u) { return u.id !== id; });
+    db.resumes = db.resumes.filter(function (r) { return r.userId !== id; });
+    Object.keys(db.sessions).forEach(function (t) { if (db.sessions[t].userId === id) delete db.sessions[t]; });
     persist();
     send(res, 200, { ok: true });
     return true;
@@ -385,7 +432,7 @@ async function handleApi(method, pathname, body, req, res) {
 /* ------------------------------------------------------------------ */
 /* 服务器                                                              */
 /* ------------------------------------------------------------------ */
-const server = http.createServer(async (req, res) => {
+const server = http.createServer(async function (req, res) {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
   const method = req.method.toUpperCase();
@@ -403,13 +450,15 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-loadDB();
-persist();
-server.listen(PORT, () => {
-  console.log('===========================================');
-  console.log(' 车辆与交通学院招新系统 · 云端后端已启动');
-  console.log(' 访问地址: http://localhost:' + PORT);
-  console.log(' 终端管理员: ' + TERMINAL_USER + ' / ' + TERMINAL_PASS);
-  console.log(' 数据文件: ' + DATA_FILE);
-  console.log('===========================================');
-});
+(async function () {
+  await loadDB();
+  persist();
+  server.listen(PORT, function () {
+    console.log('===========================================');
+    console.log(' 车辆与交通学院招新系统 · 云端后端已启动');
+    console.log(' 访问地址: http://localhost:' + PORT);
+    console.log(' 终端管理员: ' + TERMINAL_USER + ' / ' + TERMINAL_PASS);
+    console.log(' 存储方式: ' + ((pool && pgReady) ? 'Postgres（持久）' : '本地文件 ' + DATA_FILE));
+    console.log('===========================================');
+  });
+})();

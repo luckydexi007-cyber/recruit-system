@@ -1,18 +1,18 @@
+# Render 部署配置（Blueprint）
+# 注意：数据库请单独创建（推荐 Neon 免费版），把连接串填入 DATABASE_URL 环境变量，
+#      这样每次重新部署数据都不会丢失。
 services:
   - type: web
-    name: recruit-cloud-system
+    name: recruit-system
     runtime: node
     plan: free
-    buildCommand: ""
+    buildCommand: npm install
     startCommand: node server.js
     envVars:
       - key: TERMINAL_USER
         value: admin
       - key: TERMINAL_PASS
-        value: admin123
-      - key: DATA_DIR
-        value: /var/data
-    disk:
-      name: recruit-data
-      mountPath: /var/data
-      sizeGB: 1
+        value: 123a123
+      # 下面这项请到 Render 后台手动添加（值为你的 Postgres 连接串）：
+      # - key: DATABASE_URL
+      #   value: postgresql://user:pass@host/db?sslmode=require

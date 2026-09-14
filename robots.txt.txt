@@ -1,0 +1,13 @@
+User-agent: *
+# 禁止抓取后端接口，避免爬虫扫描 / 批量拉取数据
+Disallow: /api/
+
+# 常见的爬虫路径探测，直接拒绝
+Disallow: /server.js
+Disallow: /package.json
+Disallow: /data.json
+
+# 允许正常访问网页本身
+Allow: /
+
+Sitemap: https://recruit-system.onrender.com/sitemap.xml

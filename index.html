@@ -331,7 +331,7 @@ setTimeout(()=>navigate('login'),800);
 
 /* ---------------- 登录 ---------------- */
 function renderLogin(){
-container.innerHTML=`<div style="max-width:440px;margin:0 auto;"><div class="card"><div class="login-toggle"><button class="active" id="userLoginTab">用户登录</button><button id="adminLoginTab">管理员登录</button></div><div id="loginAlert" class="hidden"></div><div id="userLoginForm"><div class="form-group"><label>学号</label><input id="loginStudentId" placeholder="请输入学号"></div><div class="form-group"><label>密码</label><input id="loginPwd" type="password" placeholder="请输入密码"></div><button class="btn btn-primary btn-block" id="loginBtn">登录</button><div class="auth-switch">还没有账号？<a onclick="window._navigate('register')">立即注册</a></div></div><div id="adminLoginForm" class="hidden"><div class="form-group"><label>管理员账号</label><input id="adminUser" placeholder="请输入管理员学号"></div><div class="form-group"><label>管理员密码</label><input id="adminPwd" type="password" placeholder="请输入管理员密码"></div><button class="btn btn-primary btn-block" id="adminLoginBtn">管理员登录</button></div></div></div>`;
+container.innerHTML=`<div style="max-width:440px;margin:0 auto;"><div class="card"><div class="login-toggle"><button class="active" id="userLoginTab">用户登录</button><button id="adminLoginTab">管理员登录</button></div><div id="loginAlert" class="hidden"></div><div id="userLoginForm"><div class="form-group"><label>学号</label><input id="loginStudentId" placeholder="请输入学号"></div><div class="form-group"><label>密码</label><input id="loginPwd" type="password" placeholder="请输入密码"></div><button class="btn btn-primary btn-block" id="loginBtn">登录</button><div class="auth-switch">还没有账号？<a onclick="window._navigate('register')">立即注册</a></div></div><div id="adminLoginForm" class="hidden"><div class="form-group"><label>管理员账号</label><input id="adminUser" placeholder="请输入管理员学号"></div><div class="form-group"><label>管理员密码</label><input id="adminPwd" type="password" placeholder="请输入管理员密码"></div><div class="form-group"><label>安全码</label><input id="adminSecCode" type="password" placeholder="请输入安全码"></div><button class="btn btn-primary btn-block" id="adminLoginBtn">管理员登录</button></div></div></div>`;
 document.getElementById('userLoginTab').addEventListener('click',function(){this.classList.add('active');document.getElementById('adminLoginTab').classList.remove('active');document.getElementById('userLoginForm').classList.remove('hidden');document.getElementById('adminLoginForm').classList.add('hidden');document.getElementById('loginAlert').className='hidden';});
 document.getElementById('adminLoginTab').addEventListener('click',function(){this.classList.add('active');document.getElementById('userLoginTab').classList.remove('active');document.getElementById('adminLoginForm').classList.remove('hidden');document.getElementById('userLoginForm').classList.add('hidden');document.getElementById('loginAlert').className='hidden';});
 document.getElementById('loginBtn').addEventListener('click',async function(){
@@ -345,21 +345,21 @@ document.getElementById('adminLoginBtn').addEventListener('click',async function
 const sid=document.getElementById('adminUser').value.trim(),pwd=document.getElementById('adminPwd').value,al=document.getElementById('loginAlert'),btn=this;
 if(!sid||!pwd){al.className='alert';al.textContent='请输入管理员账号和密码';return}
 btn.disabled=true;
-try{const r=await api.post('/api/admin/login',{studentId:sid,password:pwd});api.setToken(r.token);setSession(r);renderNav();navigate('admin');}
+try{const r=await api.post('/api/admin/login',{studentId:sid,password:pwd,securityCode:(document.getElementById('adminSecCode')||{}).value||''});api.setToken(r.token);setSession(r);renderNav();navigate('admin');}
 catch(e){al.className='alert';al.textContent=e.message;btn.disabled=false;}
 });
 setTimeout(function(){
 const logo=document.querySelector('.top-bar .logo');
 if(logo)logo.addEventListener('dblclick',function(){
 var ov=document.createElement('div');ov.className='modal-overlay';
-ov.innerHTML='<div class="modal-card" style="max-width:360px;"><button class="modal-close" id="tCloseBtn">✕</button><div class="modal-title">🔐 终端管理员</div><div id="tAlert" class="hidden"></div><div class="form-group"><label>终端账号</label><input id="tUser" placeholder="请输入终端账号"></div><div class="form-group"><label>终端密码</label><input id="tPwd" type="password" placeholder="请输入终端密码"></div><button class="btn btn-primary btn-block" id="tLoginBtn">登录</button></div>';
+ov.innerHTML='<div class="modal-card" style="max-width:360px;"><button class="modal-close" id="tCloseBtn">✕</button><div class="modal-title">🔐 终端管理员</div><div id="tAlert" class="hidden"></div><div class="form-group"><label>终端账号</label><input id="tUser" placeholder="请输入终端账号"></div><div class="form-group"><label>终端密码</label><input id="tPwd" type="password" placeholder="请输入终端密码"></div><div class="form-group"><label>安全码</label><input id="tSecCode" type="password" placeholder="请输入安全码"></div><button class="btn btn-primary btn-block" id="tLoginBtn">登录</button></div>';
 document.body.appendChild(ov);
 document.getElementById('tCloseBtn').addEventListener('click',function(){ov.remove();});
 ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
 document.getElementById('tLoginBtn').addEventListener('click',async function(){
 var tu=document.getElementById('tUser').value.trim(),tp=document.getElementById('tPwd').value,ta=document.getElementById('tAlert'),tb=this;
 tb.disabled=true;
-try{const r=await api.post('/api/terminal/login',{username:tu,password:tp});api.setToken(r.token);setSession(r);ov.remove();renderNav();navigate('admin');}
+try{const r=await api.post('/api/terminal/login',{username:tu,password:tp,securityCode:(document.getElementById('tSecCode')||{}).value||''});api.setToken(r.token);setSession(r);ov.remove();renderNav();navigate('admin');}
 catch(e){ta.className='alert';ta.textContent=e.message;tb.disabled=false;}
 });
 });

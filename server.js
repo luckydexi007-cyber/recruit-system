@@ -572,7 +572,7 @@ const server = http.createServer(async function (req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'same-origin');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('X-XSS-Protection', '1; mode=block'); res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains'); res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()'); res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'");
   // 全局限流：同一 IP 每时间窗请求超限 → 429
   if (rateLimited(clientIp(req))) { send(res, 429, { error: '请求过于频繁，请稍后再试' }); return; }
   try {
@@ -607,7 +607,7 @@ const server = http.createServer(async function (req, res) {
     console.log('===========================================');
     console.log(' 车辆与交通学院招新系统 · 云端后端已启动');
     console.log(' 访问地址: http://localhost:' + PORT);
-    console.log(' 终端管理员: ' + TERMINAL_USER + ' / ' + TERMINAL_PASS);
+    console.log(' 终端管理员账号: ' + TERMINAL_USER + '（密码已隐藏）'); /* 终端密码不再打印到日志 */
     console.log(' 存储方式: ' + ((pool && pgReady) ? 'Postgres（持久，更新不丢数据）' : '本地文件 ' + DATA_FILE));
     console.log(' 数据保护: 仅允许「本人注销」「终端管理员删除用户」两种删除，更新不丢数据');
     console.log('===========================================');

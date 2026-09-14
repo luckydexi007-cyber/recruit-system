@@ -19,7 +19,7 @@ const MAX_ADMINS = 100;
 const MAX_BODY = 20 * 1024 * 1024;           // 20MB（附件以 base64 内嵌）
 const MAX_FILE = 5 * 1024 * 1024;            // 单附件 5MB
 const TERMINAL_USER = process.env.TERMINAL_USER || 'admin';
-const TERMINAL_PASS = process.env.TERMINAL_PASS || 'admin123';
+const TERMINAL_PASS = process.env.TERMINAL_PASS || '';  // 未配置则禁止登录，不再回退弱口令
 
 /* ==================================================================
  * 安全防护层
@@ -30,7 +30,7 @@ const TERMINAL_PASS = process.env.TERMINAL_PASS || 'admin123';
  *   3) 登录防爆破：同一 IP+账号 连续失败达上限后锁定冷却。
  * ================================================================== */
 const SECURITY_CODE = (process.env.SECURITY_CODE !== undefined)
-  ? String(process.env.SECURITY_CODE) : 'CQJD@2026';
+  ? String(process.env.SECURITY_CODE) : '';  // 未配置则关闭安全码，避免仓库硬编码泄露默认值
 const RATE_WINDOW_MS = 60 * 1000;      // 限流时间窗：1 分钟
 const RATE_MAX_REQ = 150;              // 每窗口每 IP 最大请求数
 const LOGIN_MAX_FAIL = 5;              // 连续失败上限
@@ -385,7 +385,7 @@ async function handleApi(method, pathname, body, req, res) {
     const locked = loginLocked(lockKey);
     if (locked) { send(res, 429, { error: '尝试次数过多，请 ' + locked + ' 秒后再试' }); return true; }
     if (!securityCodeOk(body.securityCode)) { recordLoginFail(lockKey); send(res, 401, { error: '安全码错误' }); return true; }
-    if (username !== TERMINAL_USER || password !== TERMINAL_PASS) {
+    if (!TERMINAL_PASS || username !== TERMINAL_USER || password !== TERMINAL_PASS) {
       recordLoginFail(lockKey);
       send(res, 401, { error: '终端管理员账号或密码错误' }); return true;
     }

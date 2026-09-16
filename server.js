@@ -35,6 +35,8 @@ const RATE_WINDOW_MS = 60 * 1000;      // 限流时间窗：1 分钟
 const RATE_MAX_REQ = 150;              // 每窗口每 IP 最大请求数
 const LOGIN_MAX_FAIL = 5;              // 连续失败上限
 const LOGIN_LOCK_MS = 10 * 60 * 1000;  // 锁定时长：10 分钟
+const REG_WINDOW_MS = 60 * 60 * 1000;  // 注册限流时间窗：1 小时
+const REG_MAX_PER_IP = 20;             // 每 IP 每窗口最大注册次数（防脚本批量注册）
 
 const rateBuckets = new Map();         // ip -> { count, start }
 const loginFails = new Map();          // ip+account -> { count, lockUntil }
@@ -74,6 +76,17 @@ function recordLoginFail(key) {
   return f.count;
 }
 function clearLoginFail(key) { loginFails.delete(key); }
+const actionBuckets = new Map();
+function actionLimited(key, max, windowMs) {
+  const now = Date.now();
+  let b = actionBuckets.get(key);
+  if (!b || now - b.start > windowMs) { b = { count: 0, start: now }; actionBuckets.set(key, b); }
+  b.count++;
+  if (actionBuckets.size > 5000) {
+    actionBuckets.forEach(function (v, k) { if (now - v.start > windowMs) actionBuckets.delete(k); });
+  }
+  return b.count > max;
+}
 const ALL_DEPTS = ['办公室', '组织部', '宣传部', '学习部', '文体部', '生活心理部'];
 
 /* ------------------------------------------------------------------ */
@@ -325,6 +338,7 @@ async function handleApi(method, pathname, body, req, res) {
   if (method === 'POST' && pathname === '/api/register') {
     if (!isStr(body.studentId) || !isStr(body.name) || !isStr(body.password)) { send(res, 400, { error: '参数类型错误' }); return true; }
     if (tooLong(body.name, 50) || tooLong(body.class, 50) || tooLong(body.phone, 20) || tooLong(body.email, 120) || tooLong(body.password, 128)) { send(res, 400, { error: '输入内容过长' }); return true; }
+    if (actionLimited('reg:' + clientIp(req), REG_MAX_PER_IP, REG_WINDOW_MS)) { res.setHeader('Retry-After', String(Math.ceil(REG_WINDOW_MS / 1000))); send(res, 429, { error: '注册过于频繁，请稍后再试' }); return true; }
     const sid = String(body.studentId || '').trim();
     const name = String(body.name || '').trim();
     const cls = String(body.class || '').trim();

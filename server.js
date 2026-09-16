@@ -250,6 +250,8 @@ function auth(req) {
 
 function findUserById(id) { return db.users.find(function (u) { return u.id === id; }); }
 function isStr(v) { return typeof v === 'string'; }
+function clip(v, n) { return String(v == null ? '' : v).slice(0, n); }
+function tooLong(v, n) { return typeof v === 'string' && v.length > n; }
 function findUserByStudentId(sid) { return db.users.find(function (u) { return u.studentId === sid; }); }
 
 /* ------------------------------------------------------------------ */
@@ -308,13 +310,13 @@ async function handleApi(method, pathname, body, req, res) {
   if (method === 'GET' && pathname === '/api/health') { send(res, 200, { ok: true }); return true; }
 
   if (method === 'GET' && pathname === '/api/me') {
-    if (!session) { send(res, 200, { user: null, isAdmin: false, isTerminal: false }); return true; }
+    if (!session) { send(res, 401, { user: null, isAdmin: false, isTerminal: false }); return true; }
     if (session.isTerminal) {
       send(res, 200, { user: { id: 'admin', name: '终端管理员', isTerminal: true }, isAdmin: true, isTerminal: true });
       return true;
     }
     const u = findUserById(session.userId);
-    if (!u) { delete db.sessions[session.token]; persist(); send(res, 200, { user: null, isAdmin: false, isTerminal: false }); return true; }
+    if (!u) { delete db.sessions[session.token]; persist(); send(res, 401, { user: null, isAdmin: false, isTerminal: false }); return true; }
     send(res, 200, { user: publicUser(u), isAdmin: !!session.isAdmin, isTerminal: false });
     return true;
   }
@@ -322,6 +324,7 @@ async function handleApi(method, pathname, body, req, res) {
   // ---- 注册 ----
   if (method === 'POST' && pathname === '/api/register') {
     if (!isStr(body.studentId) || !isStr(body.name) || !isStr(body.password)) { send(res, 400, { error: '参数类型错误' }); return true; }
+    if (tooLong(body.name, 50) || tooLong(body.class, 50) || tooLong(body.phone, 20) || tooLong(body.email, 120) || tooLong(body.password, 128)) { send(res, 400, { error: '输入内容过长' }); return true; }
     const sid = String(body.studentId || '').trim();
     const name = String(body.name || '').trim();
     const cls = String(body.class || '').trim();
@@ -352,7 +355,7 @@ async function handleApi(method, pathname, body, req, res) {
     const password = String(body.password || '');
     const lockKey = 's:' + clientIp(req) + ':' + sid;
     const locked = loginLocked(lockKey);
-    if (locked) { send(res, 429, { error: '尝试次数过多，请 ' + locked + ' 秒后再试' }); return true; }
+    if (locked) { res.setHeader('Retry-After', String(locked)); send(res, 429, { error: '尝试次数过多，请 ' + locked + ' 秒后再试' }); return true; }
     const u = findUserByStudentId(sid);
     if (!u || u.passwordHash !== hashPassword(password, u.salt)) { recordLoginFail(lockKey); send(res, 401, { error: '学号或密码错误' }); return true; }
     clearLoginFail(lockKey);
@@ -370,7 +373,7 @@ async function handleApi(method, pathname, body, req, res) {
     const password = String(body.password || '');
     const lockKey = 'a:' + clientIp(req) + ':' + sid;
     const locked = loginLocked(lockKey);
-    if (locked) { send(res, 429, { error: '尝试次数过多，请 ' + locked + ' 秒后再试' }); return true; }
+    if (locked) { res.setHeader('Retry-After', String(locked)); send(res, 429, { error: '尝试次数过多，请 ' + locked + ' 秒后再试' }); return true; }
     if (!securityCodeOk(body.securityCode)) { recordLoginFail(lockKey); send(res, 401, { error: '安全码错误' }); return true; }
     const u = findUserByStudentId(sid);
     if (!u || !u.isAdmin || u.passwordHash !== hashPassword(password, u.salt)) {
@@ -392,7 +395,7 @@ async function handleApi(method, pathname, body, req, res) {
     const password = String(body.password || '');
     const lockKey = 't:' + clientIp(req) + ':' + username;
     const locked = loginLocked(lockKey);
-    if (locked) { send(res, 429, { error: '尝试次数过多，请 ' + locked + ' 秒后再试' }); return true; }
+    if (locked) { res.setHeader('Retry-After', String(locked)); send(res, 429, { error: '尝试次数过多，请 ' + locked + ' 秒后再试' }); return true; }
     if (!securityCodeOk(body.securityCode)) { recordLoginFail(lockKey); send(res, 401, { error: '安全码错误' }); return true; }
     if (!TERMINAL_PASS || username !== TERMINAL_USER || password !== TERMINAL_PASS) {
       recordLoginFail(lockKey);
@@ -469,8 +472,8 @@ async function handleApi(method, pathname, body, req, res) {
     const resume = {
       id: genId(), userId: u.id, name: name, studentId: u.studentId, className: cls,
       phone: phone, email: email, departments: departments,
-      intro: String(body.intro || ''), skills: String(body.skills || ''),
-      awards: String(body.awards || ''), prevPosition: String(body.prevPosition || ''),
+      intro: clip(body.intro, 2000), skills: clip(body.skills, 1000),
+      awards: clip(body.awards, 1000), prevPosition: clip(body.prevPosition, 200),
       file: file, status: 'pending', admittedDepartment: null, admittedType: null,
       submittedAt: new Date().toISOString()
     };
@@ -587,8 +590,9 @@ const server = http.createServer(async function (req, res) {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
   res.setHeader('Referrer-Policy', 'same-origin');
-  res.setHeader('X-XSS-Protection', '1; mode=block'); res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains'); res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()'); res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'");
+  res.setHeader('X-XSS-Protection', '1; mode=block'); res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains'); res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()'); res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
   // 全局限流：同一 IP 每时间窗请求超限 → 429
   if (rateLimited(clientIp(req))) { send(res, 429, { error: '请求过于频繁，请稍后再试' }); return; }
   try {
